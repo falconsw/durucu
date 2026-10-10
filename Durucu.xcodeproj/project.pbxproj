@@ -343,7 +343,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.omer.durucu;
+				PRODUCT_BUNDLE_IDENTIFIER = com.falconsw.durucu;
 				PRODUCT_NAME = Durucu;
 				SDKROOT = macosx;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Durucu/Engine/CLibArchive";
@@ -433,7 +433,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.omer.durucu;
+				PRODUCT_BUNDLE_IDENTIFIER = com.falconsw.durucu;
 				PRODUCT_NAME = Durucu;
 				SDKROOT = macosx;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Durucu/Engine/CLibArchive";

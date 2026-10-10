@@ -1,6 +1,6 @@
 name: Durucu
 options:
-  bundleIdPrefix: com.omer
+  bundleIdPrefix: com.falconsw
   createIntermediateGroups: true
   developmentLanguage: tr
   deploymentTarget:
@@ -23,7 +23,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: Durucu
-        PRODUCT_BUNDLE_IDENTIFIER: com.omer.durucu
+        PRODUCT_BUNDLE_IDENTIFIER: com.falconsw.durucu
         INFOPLIST_FILE: Durucu/Info.plist
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_INCLUDE_PATHS: $(SRCROOT)/Durucu/Engine/CLibArchive

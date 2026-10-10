@@ -10,7 +10,7 @@ xcodebuild -project Durucu.xcodeproj -scheme Durucu -configuration Release \
 APP=build/Build/Products/Release/Durucu.app
 TARGET=/Applications/Durucu.app
 
-osascript -e 'quit app id "com.omer.durucu"' 2>/dev/null || true
+osascript -e 'quit app id "com.falconsw.durucu"' 2>/dev/null || true
 rm -rf "$TARGET"
 cp -R "$APP" "$TARGET"
 
