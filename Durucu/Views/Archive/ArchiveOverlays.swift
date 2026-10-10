@@ -43,7 +43,7 @@ private struct JobCard: View {
                 Text(job.title)
                     .font(.callout.weight(.semibold))
                     .lineLimit(1)
-                Text(job.detail.isEmpty ? "Hazırlanıyor…" : job.detail)
+                Text(job.detail.isEmpty ? String(localized: "Getting ready…") : job.detail)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -63,7 +63,7 @@ private struct JobCard: View {
             }
             .buttonStyle(.glass)
             .buttonBorderShape(.circle)
-            .help("İptal")
+            .help("Cancel")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -88,7 +88,7 @@ private struct NoticeCard: View {
                 .truncationMode(.middle)
                 .frame(maxWidth: 300, alignment: .leading)
             if !notice.outputs.isEmpty {
-                Button("Finder'da Göster") {
+                Button("Show in Finder") {
                     NSWorkspace.shared.activateFileViewerSelecting(notice.outputs)
                     dismiss()
                 }
@@ -128,9 +128,9 @@ struct PasswordSheet: View {
                 .symbolEffect(.bounce, value: shakes)
 
             VStack(spacing: 4) {
-                Text(isRetry ? "Şifre yanlış" : "Şifre gerekli")
+                Text(isRetry ? String(localized: "Incorrect password") : String(localized: "Password required"))
                     .font(.title2.weight(.bold))
-                Text(isRetry ? "Tekrar dener misin?" : "“\(archiveName)” şifreli dosyalar içeriyor.")
+                Text(isRetry ? String(localized: "Want to try again?") : String(localized: "“\(archiveName)” contains encrypted files."))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -138,9 +138,9 @@ struct PasswordSheet: View {
             HStack(spacing: 6) {
                 Group {
                     if reveal {
-                        TextField("Şifre", text: $password)
+                        TextField("Password", text: $password)
                     } else {
-                        SecureField("Şifre", text: $password)
+                        SecureField("Password", text: $password)
                     }
                 }
                 .textFieldStyle(.roundedBorder)
@@ -150,15 +150,15 @@ struct PasswordSheet: View {
                     Image(systemName: reveal ? "eye.slash" : "eye")
                 }
                 .buttonStyle(.borderless)
-                .help(reveal ? "Gizle" : "Göster")
+                .help(reveal ? String(localized: "Hide") : String(localized: "Show"))
             }
             .modifier(Shake(animatableData: shakes))
 
             HStack {
-                Button("Vazgeç", role: .cancel, action: onCancel)
+                Button("Cancel", role: .cancel, action: onCancel)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
-                Button("Aç", action: submit)
+                Button("Open", action: submit)
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.borderedProminent)
                     .disabled(password.isEmpty)

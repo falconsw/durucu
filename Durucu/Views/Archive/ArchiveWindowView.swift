@@ -25,11 +25,11 @@ struct ArchiveWindowView: View {
             }
         }
         .alert(
-            "Bir sorun çıktı",
+            "Something went wrong",
             isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } }),
             presenting: model.errorMessage
         ) { _ in
-            Button("Tamam", role: .cancel) {}
+            Button("OK", role: .cancel) {}
         } message: { message in
             Text(message)
         }
@@ -61,24 +61,24 @@ private struct ArchiveBrowser: View {
             }
             .fileDrop(isTargeted: $isDropTargeted) { model.add($0) }
             .alert(
-                "Aynı adda öğe var",
+                "An item with that name already exists",
                 isPresented: Binding(get: { model.pendingAddition != nil }, set: { if !$0 { model.pendingAddition = nil } }),
                 presenting: model.pendingAddition
             ) { pending in
-                Button("Değiştir", role: .destructive) { model.performAddition(pending, replacing: true) }
-                Button("İkisini de Koru") { model.performAddition(pending, replacing: false) }
-                Button("Vazgeç", role: .cancel) { model.pendingAddition = nil }
+                Button("Replace", role: .destructive) { model.performAddition(pending, replacing: true) }
+                Button("Keep Both") { model.performAddition(pending, replacing: false) }
+                Button("Cancel", role: .cancel) { model.pendingAddition = nil }
             } message: { pending in
                 Text(pending.conflicts.count == 1
-                    ? "“\(pending.conflicts[0])” bu klasörde zaten var. Yenisiyle değiştirilsin mi?"
-                    : "\(pending.conflicts.count) öğe bu klasörde zaten var. Yenileriyle değiştirilsin mi?")
+                    ? String(localized: "“\(pending.conflicts[0])” already exists in this folder. Replace it with the new one?")
+                    : String(localized: "\(pending.conflicts.count) items already exist in this folder. Replace them with the new ones?"))
             }
             .inspector(isPresented: $model.isInspectorPresented) {
                 InspectorView(model: model)
                     .inspectorColumnWidth(min: 250, ideal: 290, max: 420)
             }
         }
-        .searchable(text: $model.searchText, placement: .toolbar, prompt: "Arşivde ara")
+        .searchable(text: $model.searchText, placement: .toolbar, prompt: "Search archive")
         .toolbar { ArchiveToolbar(model: model) }
         .onChange(of: model.selection) { model.selectionDidChange() }
         .alert(
@@ -86,18 +86,20 @@ private struct ArchiveBrowser: View {
             isPresented: Binding(get: { model.pendingDeletion != nil }, set: { if !$0 { model.pendingDeletion = nil } }),
             presenting: model.pendingDeletion
         ) { _ in
-            Button("Sil", role: .destructive) { model.confirmDeletion() }
-            Button("Vazgeç", role: .cancel) { model.pendingDeletion = nil }
+            Button("Delete", role: .destructive) { model.confirmDeletion() }
+            Button("Cancel", role: .cancel) { model.pendingDeletion = nil }
         } message: { _ in
             Text(model.info?.hasEncryptedEntries == true
-                ? "Arşiv yeniden yazılır ve şifreli dosyalar AES-256 ile yeniden şifrelenir. Önceki sürüm Çöp Sepeti'ne taşınır."
-                : "Arşiv yeniden yazılır. Önceki sürüm Çöp Sepeti'ne taşınır.")
+                ? String(localized: "The archive is rewritten and encrypted files are re-encrypted with AES-256. The previous version goes to the Trash.")
+                : String(localized: "The archive is rewritten. The previous version goes to the Trash."))
         }
     }
 
     private var deletionTitle: String {
         guard let nodes = model.pendingDeletion?.nodes else { return "" }
-        return nodes.count == 1 ? "“\(nodes[0].name)” arşivden silinsin mi?" : "\(nodes.count) öğe arşivden silinsin mi?"
+        return nodes.count == 1
+            ? String(localized: "Delete “\(nodes[0].name)” from the archive?")
+            : String(localized: "Delete \(nodes.count) items from the archive?")
     }
 }
 
@@ -109,7 +111,7 @@ private struct DropToAddOverlay: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(Color.accentColor.opacity(0.08))
             DropHighlight(isActive: true, cornerRadius: 18)
-            Label("“\(folderName)” içine ekle", systemImage: "plus.circle.fill")
+            Label("Add to “\(folderName)”", systemImage: "plus.circle.fill")
                 .font(.title3.weight(.semibold))
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
@@ -126,58 +128,58 @@ private struct ArchiveToolbar: ToolbarContent {
 
     var body: some ToolbarContent {
         ToolbarItemGroup(placement: .navigation) {
-            Button { model.goBack() } label: { Label("Geri", systemImage: "chevron.left") }
+            Button { model.goBack() } label: { Label("Back", systemImage: "chevron.left") }
                 .disabled(!model.canGoBack)
-                .help("Geri")
-            Button { model.goForward() } label: { Label("İleri", systemImage: "chevron.right") }
+                .help("Back (⌘[)")
+            Button { model.goForward() } label: { Label("Forward", systemImage: "chevron.right") }
                 .disabled(!model.canGoForward)
-                .help("İleri")
-            Button { model.goUp() } label: { Label("Üst Klasör", systemImage: "arrow.turn.left.up") }
+                .help("Forward (⌘])")
+            Button { model.goUp() } label: { Label("Enclosing Folder", systemImage: "arrow.turn.left.up") }
                 .disabled(!model.canGoUp)
-                .help("Üst klasör (⌘↑)")
+                .help("Enclosing folder (⌘↑)")
         }
 
         ToolbarItemGroup(placement: .primaryAction) {
-            Button { model.chooseFilesToAdd() } label: { Label("Ekle", systemImage: "plus") }
+            Button { model.chooseFilesToAdd() } label: { Label("Add", systemImage: "plus") }
                 .disabled(!model.canEdit)
-                .help(model.editUnavailableReason ?? "Bu klasöre dosya ekle (⇧⌘A)")
-            Button { model.requestDeleteSelection() } label: { Label("Sil", systemImage: "trash") }
+                .help(model.editUnavailableReason ?? String(localized: "Add files to this folder (⇧⌘A)"))
+            Button { model.requestDeleteSelection() } label: { Label("Delete", systemImage: "trash") }
                 .disabled(!model.canEdit || model.selection.isEmpty)
-                .help(model.editUnavailableReason ?? "Seçilenleri arşivden sil (⌘⌫)")
+                .help(model.editUnavailableReason ?? String(localized: "Delete the selection from the archive (⌘⌫)"))
         }
 
         ToolbarSpacer(.fixed, placement: .primaryAction)
 
         ToolbarItem(placement: .primaryAction) {
-            Button { model.toggleQuickLook() } label: { Label("Hızlı Bakış", systemImage: "eye") }
+            Button { model.toggleQuickLook() } label: { Label("Quick Look", systemImage: "eye") }
                 .disabled(model.selection.isEmpty)
-                .help("Hızlı Bakış (Boşluk)")
+                .help("Quick Look (Space)")
         }
 
         ToolbarItem(placement: .primaryAction) {
             Menu {
-                Button("Tümünü Çıkart") { model.extract(.all) }
-                Button("Seçilenleri Çıkart") { model.extract(.selection) }
+                Button("Extract All") { model.extract(.all) }
+                Button("Extract Selected") { model.extract(.selection) }
                     .disabled(model.selection.isEmpty)
                 Divider()
-                Button("Tümünü Farklı Konuma Çıkart…") { model.extract(.all, chooseDestination: true) }
-                Button("Seçilenleri Farklı Konuma Çıkart…") { model.extract(.selection, chooseDestination: true) }
+                Button("Extract All To…") { model.extract(.all, chooseDestination: true) }
+                Button("Extract Selected To…") { model.extract(.selection, chooseDestination: true) }
                     .disabled(model.selection.isEmpty)
             } label: {
-                Label(model.selection.isEmpty ? "Tümünü Çıkart" : "Seçileni Çıkart", systemImage: "arrow.down.to.line")
+                Label(model.selection.isEmpty ? String(localized: "Extract All") : String(localized: "Extract Selected"), systemImage: "arrow.down.to.line")
             } primaryAction: {
                 model.extract(model.selection.isEmpty ? .all : .selection)
             }
             .menuIndicator(.visible)
-            .help("Çıkart (⌘E) · Farklı konuma (⌥⌘E)")
+            .help("Extract (⌘E) · To another place (⌥⌘E)")
             .disabled(model.job != nil)
         }
 
         ToolbarSpacer(.fixed, placement: .primaryAction)
 
         ToolbarItem(placement: .primaryAction) {
-            Button { model.isInspectorPresented.toggle() } label: { Label("Bilgi", systemImage: "sidebar.trailing") }
-                .help("Bilgi panelini göster/gizle (⌥⌘I)")
+            Button { model.isInspectorPresented.toggle() } label: { Label("Inspector", systemImage: "sidebar.trailing") }
+                .help("Show or hide the inspector (⌥⌘I)")
         }
     }
 }
@@ -191,7 +193,7 @@ private struct PathBar: View {
             if model.isSearching {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
-                Text("“\(model.searchText)” için \(Format.count(model.rows.count)) sonuç")
+                Text("\(model.rows.count) results for “\(model.searchText)”")
                     .foregroundStyle(.secondary)
                 Spacer()
             } else {
@@ -245,7 +247,7 @@ private struct StatusBar: View {
             Text(leading)
             Spacer()
             if model.password != nil {
-                Label("Şifre girildi", systemImage: "lock.open.fill")
+                Label("Password entered", systemImage: "lock.open.fill")
                     .labelStyle(.titleAndIcon)
             }
             Text(trailing)
@@ -260,17 +262,17 @@ private struct StatusBar: View {
     private var leading: String {
         let selected = model.selectedNodes
         if selected.isEmpty {
-            return "\(Format.count(model.rows.count)) öğe"
+            return String(localized: "\(model.rows.count) items")
         }
         let bytes = selected.reduce(Int64(0)) { $0 + $1.size }
-        return "\(Format.count(selected.count)) / \(Format.count(model.rows.count)) öğe seçildi · \(Format.bytes(bytes))"
+        return String(localized: "\(selected.count) of \(model.rows.count) selected · \(Format.bytes(bytes))")
     }
 
     private var trailing: String {
         let root = model.tree.root
-        var parts = ["\(Format.count(root.fileCount)) dosya", "açılmış \(Format.bytes(root.size))"]
-        if let info = model.info { parts.append("arşiv \(Format.bytes(info.archiveSize))") }
-        if root.savings >= 0 { parts.append("%\(Int((root.savings * 100).rounded())) kazanç") }
+        var parts = [String(localized: "\(root.fileCount) files"), String(localized: "\(Format.bytes(root.size)) unpacked")]
+        if let info = model.info { parts.append(String(localized: "\(Format.bytes(info.archiveSize)) archive")) }
+        if root.savings >= 0 { parts.append(String(localized: "\(Format.percent(root.savings)) saved")) }
         return parts.joined(separator: " · ")
     }
 }
@@ -290,7 +292,7 @@ private struct LoadingView: View {
             ProgressView(value: fraction > 0.01 ? fraction : nil)
                 .progressViewStyle(.linear)
                 .frame(width: 240)
-            Text("Arşiv okunuyor…")
+            Text("Reading the archive…")
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -304,13 +306,13 @@ private struct FailureView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label("Arşiv açılamadı", systemImage: "exclamationmark.triangle.fill")
+            Label("The archive couldn't be opened", systemImage: "exclamationmark.triangle.fill")
         } description: {
             Text(message)
         } actions: {
             HStack {
-                Button("Finder'da Göster") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
-                Button("Tekrar Dene", action: retry)
+                Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+                Button("Try Again", action: retry)
                     .buttonStyle(.borderedProminent)
             }
         }

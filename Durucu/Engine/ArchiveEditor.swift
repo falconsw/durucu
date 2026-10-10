@@ -24,7 +24,7 @@ enum ArchiveEditor {
         let fileManager = FileManager.default
         let folder = url.deletingLastPathComponent()
         guard fileManager.isWritableFile(atPath: folder.path) else {
-            throw ArchiveError.writeFailed("“\(folder.lastPathComponent)” klasörüne yazılamıyor.")
+            throw ArchiveError.writeFailed(String(localized: "Can't write to the folder “\(folder.lastPathComponent)”."))
         }
 
         let temporary = folder.appendingPathComponent(".\(url.lastPathComponent).durucu-edit")
@@ -122,13 +122,14 @@ enum ArchiveEditor {
     /// Puts the new archive in place and moves the previous version to the Trash.
     private static func swap(_ url: URL, with temporary: URL) throws {
         let fileManager = FileManager.default
-        let backupName = "\(FileNaming.baseName(of: url)) (önceki sürüm)\(url.lastPathComponent.dropFirst(FileNaming.baseName(of: url).count))"
+        let base = FileNaming.baseName(of: url)
+        let backupName = String(localized: "\(base) (previous version)") + url.lastPathComponent.dropFirst(base.count)
         let backup = url.deletingLastPathComponent().appendingPathComponent(backupName)
         try? fileManager.removeItem(at: backup)
         do {
             _ = try fileManager.replaceItemAt(url, withItemAt: temporary, backupItemName: backupName, options: [.withoutDeletingBackupItem])
         } catch {
-            throw ArchiveError.writeFailed("Yeni arşiv yerine konamadı. \(error.localizedDescription)")
+            throw ArchiveError.writeFailed(String(localized: "Couldn't put the new archive in place. \(error.localizedDescription)"))
         }
         if fileManager.fileExists(atPath: backup.path) {
             try? fileManager.trashItem(at: backup, resultingItemURL: nil)

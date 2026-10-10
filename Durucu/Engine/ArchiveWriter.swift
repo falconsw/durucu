@@ -33,12 +33,12 @@ enum OutputFormat: String, CaseIterable, Identifiable, Sendable {
 
     var summary: String {
         switch self {
-        case .zip: "Her yerde açılır. Windows, macOS, telefonlar."
-        case .sevenZip: "Genelde en küçük boyut. 7-Zip, Keka, Dürücü açar."
-        case .tarGz: "Unix dünyasının standardı. İzinleri korur."
-        case .tarXz: "TAR'ın daha sıkı hali. Yavaş ama küçük."
-        case .tarBz2: "Eski ama yaygın bir TAR sıkıştırması."
-        case .tar: "Sıkıştırmasız TAR."
+        case .zip: String(localized: "Opens everywhere: Windows, macOS, phones.")
+        case .sevenZip: String(localized: "Usually the smallest. Opens in 7-Zip, Keka and Dürücü.")
+        case .tarGz: String(localized: "The Unix standard. Keeps permissions.")
+        case .tarXz: String(localized: "A tighter TAR. Slower but smaller.")
+        case .tarBz2: String(localized: "An older but common TAR compression.")
+        case .tar: String(localized: "Uncompressed TAR.")
         }
     }
 
@@ -65,10 +65,10 @@ enum CompressionLevel: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .store: "Yok"
-        case .fast: "Hızlı"
-        case .balanced: "Dengeli"
-        case .best: "En iyi"
+        case .store: String(localized: "None")
+        case .fast: String(localized: "Fast")
+        case .balanced: String(localized: "Balanced")
+        case .best: String(localized: "Best")
         }
     }
 
@@ -286,12 +286,12 @@ enum ArchiveWriter {
         guard item.kind == .file, item.size > 0 else { return }
 
         let descriptor = open(item.url.path, O_RDONLY)
-        guard descriptor >= 0 else { throw ArchiveError.writeFailed("\(item.url.lastPathComponent) okunamadı.") }
+        guard descriptor >= 0 else { throw ArchiveError.writeFailed(String(localized: "Couldn't read “\(item.url.lastPathComponent)”.")) }
         defer { close(descriptor) }
         var remaining = item.size
         while remaining > 0 {
             let count = read(descriptor, buffer, min(bufferSize, Int(remaining)))
-            if count < 0 { throw ArchiveError.writeFailed("\(item.url.lastPathComponent) okunamadı.") }
+            if count < 0 { throw ArchiveError.writeFailed(String(localized: "Couldn't read “\(item.url.lastPathComponent)”.")) }
             if count == 0 { break }
             try output.write(buffer, count: count)
             remaining -= Int64(count)

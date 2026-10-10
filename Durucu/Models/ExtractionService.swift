@@ -34,7 +34,7 @@ enum ExtractionService {
         do {
             try fileManager.createDirectory(at: staging, withIntermediateDirectories: false)
         } catch {
-            throw ArchiveError.writeFailed("“\(request.destination.lastPathComponent)” klasörüne yazılamıyor.")
+            throw ArchiveError.writeFailed(String(localized: "Can't write to the folder “\(request.destination.lastPathComponent)”."))
         }
 
         do {
@@ -120,8 +120,8 @@ enum ExtractionService {
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
         panel.allowsMultipleSelection = false
-        panel.prompt = "Buraya Çıkart"
-        panel.message = "“\(archive.lastPathComponent)” nereye çıkartılsın?"
+        panel.prompt = String(localized: "Extract Here")
+        panel.message = String(localized: "Where should “\(archive.lastPathComponent)” be extracted?")
         panel.directoryURL = archive.deletingLastPathComponent()
         let response: NSApplication.ModalResponse
         if let window {

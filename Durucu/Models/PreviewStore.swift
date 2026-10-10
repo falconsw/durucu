@@ -42,7 +42,7 @@ final class PreviewStore {
         let task = Task<URL, Error> {
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             let outputs = try await ExtractionService.run(request) { _ in }
-            guard let output = outputs.first else { throw ArchiveError.readFailed("“\(node.name)” bulunamadı.") }
+            guard let output = outputs.first else { throw ArchiveError.readFailed(String(localized: "“\(node.name)” wasn't found.")) }
             return output
         }
         inflight[node.path] = task

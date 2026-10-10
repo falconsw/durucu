@@ -8,7 +8,7 @@ struct FolderSidebar: View {
             get: { model.isSearching ? nil : model.currentFolder },
             set: { if let id = $0 { model.navigate(to: id) } }
         )) {
-            Section("Klasörler") {
+            Section("Folders") {
                 ForEach(model.outline) { folder in
                     FolderRow(folder: folder, model: model)
                 }
@@ -78,13 +78,13 @@ private struct SummaryCard: View {
                         Image(systemName: "lock.fill")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                            .help("Şifreli dosyalar içeriyor")
+                            .help("Contains encrypted files")
                     }
                 }
-                Text("\(Format.count(root.fileCount)) dosya · \(Format.count(root.folderCount)) klasör")
+                Text("\(root.fileCount) files · \(root.folderCount) folders")
                     .font(.caption)
                 if let info = model.info {
-                    Text("\(Format.bytes(root.size)) → \(Format.bytes(info.archiveSize))")
+                    Text(verbatim: "\(Format.bytes(root.size)) → \(Format.bytes(info.archiveSize))")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

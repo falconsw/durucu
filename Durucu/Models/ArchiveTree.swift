@@ -49,7 +49,7 @@ struct ArchiveTree: Sendable {
     static let empty = ArchiveTree(nodes: [
         ArchiveNode(id: 0, name: "", path: "", isDirectory: true, isSymlink: false, isImplicit: true, size: 0,
                     compressedSize: nil, modified: nil, isEncrypted: false, method: nil, crc32: nil, linkTarget: nil,
-                    permissions: 0o755, parent: nil, kindDescription: "Arşiv"),
+                    permissions: 0o755, parent: nil, kindDescription: String(localized: "Archive")),
     ])
 
     var root: ArchiveNode { nodes[Self.rootID] }
@@ -96,13 +96,15 @@ struct ArchiveTree: Sendable {
 
     static func build(from entries: [ArchiveEntry], includeMacMetadata: Bool) -> ArchiveTree {
         var nodes = empty.nodes
+        // Totals start at zero and turn nil as soon as one child's compressed size is unknown.
+        nodes[rootID].compressedSize = 0
         var directories: [String: Int] = ["": rootID]
         var kinds: [String: String] = [:]
 
         func kind(for name: String) -> String {
             let ext = (name as NSString).pathExtension.lowercased()
             if let cached = kinds[ext] { return cached }
-            let description = UTType(filenameExtension: ext)?.localizedDescription ?? "Belge"
+            let description = UTType(filenameExtension: ext)?.localizedDescription ?? String(localized: "Document")
             kinds[ext] = description
             return description
         }
@@ -116,7 +118,7 @@ struct ArchiveTree: Sendable {
             nodes.append(ArchiveNode(
                 id: id, name: name, path: path, isDirectory: true, isSymlink: false, isImplicit: true, size: 0,
                 compressedSize: 0, modified: nil, isEncrypted: false, method: nil, crc32: nil, linkTarget: nil,
-                permissions: 0o755, parent: parent, kindDescription: isPackage ? kind(for: name) : "Klasör"
+                permissions: 0o755, parent: parent, kindDescription: isPackage ? kind(for: name) : String(localized: "Folder")
             ))
             nodes[parent].children.append(id)
             directories[path] = id
@@ -140,7 +142,7 @@ struct ArchiveTree: Sendable {
                 isImplicit: false, size: entry.size ?? 0, compressedSize: entry.compressedSize,
                 modified: entry.modified, isEncrypted: entry.isEncrypted, method: entry.method, crc32: entry.crc32,
                 linkTarget: entry.linkTarget, permissions: entry.permissions, parent: parent,
-                kindDescription: entry.kind == .symlink ? "Sembolik bağlantı" : kind(for: name)
+                kindDescription: entry.kind == .symlink ? String(localized: "Symbolic link") : kind(for: name)
             ))
             nodes[parent].children.append(id)
         }

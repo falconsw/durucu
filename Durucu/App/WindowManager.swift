@@ -99,7 +99,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = true
-        window.title = "Yeni Arşiv"
+        window.title = String(localized: "New Archive")
         configure(window, content: ComposeView(model: model, close: { [weak window] in window?.close() }),
                   size: NSSize(width: 640, height: 720))
         cascade(window)
@@ -138,8 +138,8 @@ final class WindowManager: NSObject, NSWindowDelegate {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
-        panel.prompt = "Aç"
-        panel.message = "Açılacak arşivi seç"
+        panel.prompt = String(localized: "Open")
+        panel.message = String(localized: "Choose an archive to open")
         if panel.runModal() == .OK { open(panel.urls) }
     }
 
@@ -148,8 +148,8 @@ final class WindowManager: NSObject, NSWindowDelegate {
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = true
         panel.canChooseFiles = true
-        panel.prompt = "Seç"
-        panel.message = "Arşive eklenecek dosya ve klasörleri seç"
+        panel.prompt = String(localized: "Choose")
+        panel.message = String(localized: "Choose files and folders to put in the archive")
         if panel.runModal() == .OK { showCompose(with: panel.urls) }
     }
 
@@ -177,9 +177,9 @@ final class WindowManager: NSObject, NSWindowDelegate {
         guard let worker = workers[ObjectIdentifier(sender)], worker.isBusy else { return true }
         let alert = NSAlert()
         alert.messageText = "\(worker.busyTitle)…"
-        alert.informativeText = "Pencereyi kapatırsan işlem iptal edilir ve yarım kalan dosyalar silinir."
-        alert.addButton(withTitle: "İptal Et ve Kapat")
-        alert.addButton(withTitle: "Devam Et")
+        alert.informativeText = String(localized: "If you close the window, it's cancelled and any partial files are removed.")
+        alert.addButton(withTitle: String(localized: "Cancel and Close"))
+        alert.addButton(withTitle: String(localized: "Keep Working"))
         Task {
             guard await alert.beginSheetModal(for: sender) == .alertFirstButtonReturn else { return }
             await worker.cancelAndWait()

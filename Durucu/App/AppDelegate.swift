@@ -44,10 +44,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let busy = WindowManager.shared.busyWorkers
         guard !busy.isEmpty else { return .terminateNow }
         let alert = NSAlert()
-        alert.messageText = busy.count == 1 ? "\(busy[0].busyTitle)…" : "\(busy.count) işlem sürüyor"
-        alert.informativeText = "Çıkarsan iptal edilir ve yarım kalan dosyalar silinir."
-        alert.addButton(withTitle: "İptal Et ve Çık")
-        alert.addButton(withTitle: "Vazgeç")
+        alert.messageText = busy.count == 1 ? "\(busy[0].busyTitle)…" : String(localized: "\(busy.count) tasks are running")
+        alert.informativeText = String(localized: "If you quit, they're cancelled and any partial files are removed.")
+        alert.addButton(withTitle: String(localized: "Cancel and Quit"))
+        alert.addButton(withTitle: String(localized: "Keep Working"))
         guard alert.runModal() == .alertFirstButtonReturn else { return .terminateCancel }
         Task {
             for worker in busy { await worker.cancelAndWait() }
@@ -58,17 +58,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         PreviewStore.purgeAll()
+        if Relaunch.isRequested {
+            // A detached shell outlives this process and opens the app again once it has exited.
+            let relaunch = Process()
+            relaunch.executableURL = URL(fileURLWithPath: "/bin/sh")
+            relaunch.arguments = ["-c", "sleep 0.6; /usr/bin/open \"$0\"", Bundle.main.bundlePath]
+            try? relaunch.run()
+        }
     }
+
 
     func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
         let menu = NSMenu()
-        menu.addItem(withTitle: "Yeni Arşiv…", action: #selector(newArchiveFromDock), keyEquivalent: "").target = self
-        menu.addItem(withTitle: "Arşiv Aç…", action: #selector(openFromDock), keyEquivalent: "").target = self
+        menu.addItem(withTitle: String(localized: "New Archive…"), action: #selector(newArchiveFromDock), keyEquivalent: "").target = self
+        menu.addItem(withTitle: String(localized: "Open Archive…"), action: #selector(openFromDock), keyEquivalent: "").target = self
         return menu
     }
 
     @objc private func newArchiveFromDock() { WindowManager.shared.chooseFilesToCompress() }
     @objc private func openFromDock() { WindowManager.shared.chooseArchivesToOpen() }
+}
+
+/// Quits and opens the app again, e.g. to switch languages. The reopen happens in
+/// `applicationWillTerminate`, so a quit the user cancels doesn't leave two copies running.
+@MainActor
+enum Relaunch {
+    static private(set) var isRequested = false
+
+    static func now() {
+        isRequested = true
+        NSApp.terminate(nil)
+        // Still running: the user kept a busy window open.
+        isRequested = false
+    }
 }
 
 /// Finder → Services / Quick Actions entries declared under NSServices in Info.plist.

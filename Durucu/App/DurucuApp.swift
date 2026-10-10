@@ -4,6 +4,11 @@ import SwiftUI
 struct DurucuApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    init() {
+        // Runs before any window or menu loads, so the chosen language applies to this launch.
+        AppLanguage.apply()
+    }
+
     var body: some Scene {
         Settings {
             SettingsView()
@@ -17,17 +22,17 @@ struct DurucuApp: App {
 struct DurucuCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("Yeni Arşiv…") { WindowManager.shared.chooseFilesToCompress() }
+            Button("New Archive…") { WindowManager.shared.chooseFilesToCompress() }
                 .keyboardShortcut("n")
-            Button("Aç…") { WindowManager.shared.chooseArchivesToOpen() }
+            Button("Open…") { WindowManager.shared.chooseArchivesToOpen() }
                 .keyboardShortcut("o")
             RecentArchivesMenu()
         }
-        CommandMenu("Arşiv") {
+        CommandMenu("Archive") {
             ArchiveMenu()
         }
         CommandGroup(before: .windowList) {
-            Button("Karşılama Ekranı") { WindowManager.shared.showHome() }
+            Button("Welcome Window") { WindowManager.shared.showHome() }
                 .keyboardShortcut("0", modifiers: [.command, .shift])
             Divider()
         }
@@ -38,14 +43,14 @@ private struct RecentArchivesMenu: View {
     private var recents = RecentArchives.shared
 
     var body: some View {
-        Menu("Son Açılanlar") {
+        Menu("Open Recent") {
             ForEach(recents.urls, id: \.self) { url in
                 Button(url.lastPathComponent) { WindowManager.shared.open([url]) }
             }
             if !recents.urls.isEmpty {
                 Divider()
             }
-            Button("Listeyi Temizle") { recents.clear() }
+            Button("Clear Menu") { recents.clear() }
                 .disabled(recents.urls.isEmpty)
         }
     }
@@ -58,12 +63,12 @@ private struct ArchiveMenu: View {
     var body: some View {
         let model = active.model
         let hasSelection = !(model?.selection.isEmpty ?? true)
-        Button(hasSelection ? "Seçilenleri Çıkart" : "Tümünü Çıkart") {
+        Button(hasSelection ? String(localized: "Extract Selected") : String(localized: "Extract All")) {
             model?.extract(hasSelection ? .selection : .all)
         }
         .keyboardShortcut("e")
         .disabled(model?.phase != .ready || model?.job != nil)
-        Button(hasSelection ? "Seçilenleri Farklı Konuma Çıkart…" : "Tümünü Farklı Konuma Çıkart…") {
+        Button(hasSelection ? String(localized: "Extract Selected To…") : String(localized: "Extract All To…")) {
             model?.extract(hasSelection ? .selection : .all, chooseDestination: true)
         }
         .keyboardShortcut("e", modifiers: [.command, .option])
@@ -71,42 +76,42 @@ private struct ArchiveMenu: View {
 
         Divider()
 
-        Button("Arşive Ekle…") { model?.chooseFilesToAdd() }
+        Button("Add to Archive…") { model?.chooseFilesToAdd() }
             .keyboardShortcut("a", modifiers: [.command, .shift])
             .disabled(!(model?.canEdit ?? false))
-        Button("Arşivden Sil…") { model?.requestDeleteSelection() }
+        Button("Delete from Archive…") { model?.requestDeleteSelection() }
             .keyboardShortcut(.delete)
             .disabled(!(model?.canEdit ?? false) || !hasSelection)
 
         Divider()
 
-        Button("Aç") { if let model { model.activate(model.selection) } }
+        Button("Open") { if let model { model.activate(model.selection) } }
             .keyboardShortcut(.downArrow)
             .disabled(!hasSelection)
-        Button("Hızlı Bakış") { model?.toggleQuickLook() }
+        Button("Quick Look") { model?.toggleQuickLook() }
             .keyboardShortcut("y")
             .disabled(!hasSelection)
 
         Divider()
 
-        Button("Geri") { model?.goBack() }
+        Button("Back") { model?.goBack() }
             .keyboardShortcut("[")
             .disabled(!(model?.canGoBack ?? false))
-        Button("İleri") { model?.goForward() }
+        Button("Forward") { model?.goForward() }
             .keyboardShortcut("]")
             .disabled(!(model?.canGoForward ?? false))
-        Button("Üst Klasör") { model?.goUp() }
+        Button("Enclosing Folder") { model?.goUp() }
             .keyboardShortcut(.upArrow)
             .disabled(!(model?.canGoUp ?? false))
 
         Divider()
 
-        Button((model?.isInspectorPresented ?? false) ? "Bilgi Panelini Gizle" : "Bilgi Panelini Göster") {
+        Button((model?.isInspectorPresented ?? false) ? String(localized: "Hide Inspector") : String(localized: "Show Inspector")) {
             model?.isInspectorPresented.toggle()
         }
         .keyboardShortcut("i", modifiers: [.command, .option])
         .disabled(model == nil)
-        Button((model?.showsMacMetadata ?? false) ? "macOS Artıklarını Gizle" : "macOS Artıklarını Göster") {
+        Button((model?.showsMacMetadata ?? false) ? String(localized: "Hide macOS Clutter") : String(localized: "Show macOS Clutter")) {
             model?.showsMacMetadata.toggle()
         }
         .disabled(model == nil)

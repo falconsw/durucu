@@ -110,7 +110,7 @@ final class ArchiveModel {
 
     var subtitle: String {
         guard let info, phase == .ready else { return "" }
-        return "\(info.displayFormat) · \(Format.count(tree.root.fileCount)) dosya · \(Format.bytes(info.archiveSize))"
+        return "\(info.displayFormat) · \(String(localized: "\(tree.root.fileCount) files")) · \(Format.bytes(info.archiveSize))"
     }
 
     // MARK: Loading
@@ -268,8 +268,10 @@ final class ArchiveModel {
                 totalBytes: nodes?.reduce(0) { $0 + $1.size } ?? tree.root.size,
                 skipMacMetadata: !showsMacMetadata
             )
-            run(request, title: nodes.map { $0.count == 1 ? "“\($0[0].name)” çıkartılıyor" : "\($0.count) öğe çıkartılıyor" }
-                ?? "Arşiv çıkartılıyor") { [weak self] in
+            let title = nodes.map {
+                $0.count == 1 ? String(localized: "Extracting “\($0[0].name)”") : String(localized: "Extracting \($0.count) items")
+            } ?? String(localized: "Extracting archive")
+            run(request, title: title) { [weak self] in
                 self?.extract(scope, chooseDestination: chooseDestination)
             }
         }
@@ -300,10 +302,12 @@ final class ArchiveModel {
 
     private func finished(_ outputs: [URL]) {
         guard !outputs.isEmpty else {
-            errorMessage = "Çıkartılacak dosya bulunamadı."
+            errorMessage = String(localized: "There was nothing to extract.")
             return
         }
-        let message = outputs.count == 1 ? "“\(outputs[0].lastPathComponent)” çıkartıldı" : "\(outputs.count) öğe çıkartıldı"
+        let message = outputs.count == 1
+            ? String(localized: "Extracted “\(outputs[0].lastPathComponent)”")
+            : String(localized: "Extracted \(outputs.count) items")
         showNotice(Notice(message: message, outputs: outputs))
         if Pref.bool(Pref.revealAfterExtract) {
             NSWorkspace.shared.activateFileViewerSelecting(outputs)
@@ -326,10 +330,10 @@ final class ArchiveModel {
     var editFormat: OutputFormat? { info.flatMap(OutputFormat.init(rewriting:)) }
 
     var editUnavailableReason: String? {
-        guard let info else { return "Arşiv henüz okunmadı." }
-        if editFormat == nil { return "\(info.displayFormat) arşivleri yalnızca okunabilir, değiştirilemez." }
+        guard let info else { return String(localized: "The archive hasn't been read yet.") }
+        if editFormat == nil { return String(localized: "\(info.displayFormat) archives are read-only and can't be changed.") }
         if !FileManager.default.isWritableFile(atPath: url.deletingLastPathComponent().path) {
-            return "Arşivin bulunduğu klasöre yazılamıyor."
+            return String(localized: "Can't write to the folder that contains the archive.")
         }
         return nil
     }
@@ -342,8 +346,8 @@ final class ArchiveModel {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = true
-        panel.prompt = "Ekle"
-        panel.message = "“\(folder.id == ArchiveTree.rootID ? archiveName : folder.name)” içine eklenecek dosya ve klasörleri seç"
+        panel.prompt = String(localized: "Add")
+        panel.message = String(localized: "Choose files and folders to add to “\(folder.id == ArchiveTree.rootID ? archiveName : folder.name)”")
         let handler: (NSApplication.ModalResponse) -> Void = { [weak self] response in
             guard response == .OK else { return }
             self?.add(panel.urls, into: folder.id)
@@ -405,8 +409,10 @@ final class ArchiveModel {
             sources: addition.urls, prefix: folder.path, names: names, excludeMacMetadata: Pref.bool(Pref.excludeMacMetadata)
         )
         let added = Set(finalNames.map { (folder.path.isEmpty ? $0 : "\(folder.path)/\($0)").precomposedStringWithCanonicalMapping })
-        let title = finalNames.count == 1 ? "“\(finalNames[0])” ekleniyor" : "\(finalNames.count) öğe ekleniyor"
-        let message = finalNames.count == 1 ? "“\(finalNames[0])” eklendi" : "\(finalNames.count) öğe eklendi"
+        let title = finalNames.count == 1
+            ? String(localized: "Adding “\(finalNames[0])”") : String(localized: "Adding \(finalNames.count) items")
+        let message = finalNames.count == 1
+            ? String(localized: "Added “\(finalNames[0])”") : String(localized: "Added \(finalNames.count) items")
         runEdit(request, title: title, notice: message, select: added) { [weak self] in
             self?.performAddition(addition, replacing: replacing)
         }
@@ -431,8 +437,11 @@ final class ArchiveModel {
             url: url, format: format, level: Pref.defaultLevelValue, password: password,
             deletions: Set(nodes.map(\.path)), sources: [], prefix: "", names: [:], excludeMacMetadata: true
         )
-        let title = nodes.count == 1 ? "“\(nodes[0].name)” siliniyor" : "\(nodes.count) öğe siliniyor"
-        let message = nodes.count == 1 ? "“\(nodes[0].name)” arşivden silindi" : "\(nodes.count) öğe arşivden silindi"
+        let title = nodes.count == 1
+            ? String(localized: "Deleting “\(nodes[0].name)”") : String(localized: "Deleting \(nodes.count) items")
+        let message = nodes.count == 1
+            ? String(localized: "Deleted “\(nodes[0].name)” from the archive")
+            : String(localized: "Deleted \(nodes.count) items from the archive")
         runEdit(request, title: title, notice: message, select: []) { [weak self] in
             self?.runDeletion(nodes)
         }

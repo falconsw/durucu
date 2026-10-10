@@ -27,7 +27,7 @@ final class ComposeModel {
     }
 
     private(set) var sources: [Source] = []
-    var name = "Arşiv"
+    var name = String(localized: "Archive")
     private var nameWasEdited = false
     var destination: URL
     var format = Pref.defaultFormatValue
@@ -58,13 +58,13 @@ final class ComposeModel {
     var outputFileName: String { "\(trimmedName).\(format.fileExtension)" }
     private var trimmedName: String {
         let value = name.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "/", with: "-")
-        return value.isEmpty ? "Arşiv" : value
+        return value.isEmpty ? String(localized: "Archive") : value
     }
 
     var passwordProblem: String? {
         guard usesPassword, format.supportsPassword else { return nil }
-        if password.isEmpty { return "Bir şifre gir." }
-        if password != passwordConfirmation { return "Şifreler eşleşmiyor." }
+        if password.isEmpty { return String(localized: "Enter a password.") }
+        if password != passwordConfirmation { return String(localized: "The passwords don't match.") }
         return nil
     }
 
@@ -112,9 +112,9 @@ final class ComposeModel {
             name = only.url.lastPathComponent
         } else if sources.count > 1 {
             let parent = sources[0].url.deletingLastPathComponent()
-            name = sources.allSatisfy({ $0.url.deletingLastPathComponent() == parent }) ? parent.lastPathComponent : "Arşiv"
+            name = sources.allSatisfy({ $0.url.deletingLastPathComponent() == parent }) ? parent.lastPathComponent : String(localized: "Archive")
         } else {
-            name = "Arşiv"
+            name = String(localized: "Archive")
         }
     }
 
@@ -163,7 +163,7 @@ final class ComposeModel {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
-        panel.prompt = "Seç"
+        panel.prompt = String(localized: "Choose")
         panel.directoryURL = destination
         let handler: (NSApplication.ModalResponse) -> Void = { [weak self] response in
             if response == .OK, let url = panel.url { self?.destination = url }
@@ -243,7 +243,7 @@ extension ComposeModel: BackgroundWork {
         return false
     }
 
-    var busyTitle: String { "“\(outputFileName)” oluşturuluyor" }
+    var busyTitle: String { String(localized: "Creating “\(outputFileName)”") }
 
     func cancelAndWait() async {
         workTask?.cancel()

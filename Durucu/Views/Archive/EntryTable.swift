@@ -2,19 +2,19 @@ import SwiftUI
 
 struct EntryTable: View {
     @Bindable var model: ArchiveModel
-    @SceneStorage("archiveColumns") private var columns = TableColumnCustomization<ArchiveNode>()
+    @State private var columns = TableColumnCustomization<ArchiveNode>()
 
     var body: some View {
         let rows = model.rows
         Table(of: ArchiveNode.self, selection: $model.selection, sortOrder: $model.sortOrder, columnCustomization: $columns) {
-            TableColumn("Ad", value: \.name, comparator: .localizedStandard) { node in
+            TableColumn("Name", value: \.name, comparator: .localizedStandard) { node in
                 NameCell(node: node, showsLocation: model.isSearching)
             }
             .width(min: 200, ideal: 280)
             .customizationID("name")
             .disabledCustomizationBehavior(.visibility)
 
-            TableColumn("Boyut", value: \.size) { node in
+            TableColumn("Size", value: \.size) { node in
                 Text(Format.bytes(node.size))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
@@ -23,29 +23,29 @@ struct EntryTable: View {
             .alignment(.trailing)
             .customizationID("size")
 
-            TableColumn("Sıkıştırılmış", value: \.compressedSortKey) { node in
+            TableColumn("Compressed", value: \.compressedSortKey) { node in
                 Text(node.compressedSize.map(Format.bytes) ?? "—")
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
-            .width(min: 70, ideal: 92)
+            .width(min: 90, ideal: 104)
             .alignment(.trailing)
             .customizationID("packed")
 
-            TableColumn("Kazanç", value: \.savings) { node in
+            TableColumn("Saved", value: \.savings) { node in
                 SavingsBar(savings: node.savings)
             }
             .width(min: 84, ideal: 96)
             .customizationID("savings")
 
-            TableColumn("Değiştirilme", value: \.modifiedSortKey) { node in
+            TableColumn("Date Modified", value: \.modifiedSortKey) { node in
                 Text(Format.date(node.modified))
                     .foregroundStyle(.secondary)
             }
             .width(min: 110, ideal: 136)
             .customizationID("modified")
 
-            TableColumn("Tür", value: \.kindDescription) { node in
+            TableColumn("Kind", value: \.kindDescription) { node in
                 Text(node.kindDescription)
                     .foregroundStyle(.secondary)
             }
@@ -78,9 +78,9 @@ struct EntryTable: View {
                     ContentUnavailableView.search(text: model.searchText)
                 } else {
                     ContentUnavailableView(
-                        "Bu klasör boş",
+                        "This folder is empty",
                         systemImage: "folder",
-                        description: Text(model.canEdit ? "Eklemek için dosyaları buraya sürükle." : "")
+                        description: Text(model.canEdit ? String(localized: "Drag files here to add them.") : "")
                     )
                 }
             }
@@ -116,7 +116,7 @@ private struct NameCell: View {
                 Image(systemName: "lock.fill")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .help("Şifreli")
+                    .help("Encrypted")
             }
         }
     }
@@ -129,31 +129,33 @@ private struct RowMenu: View {
     var body: some View {
         let nodes = ids.compactMap { model.tree.node($0) }
         if !nodes.isEmpty {
-            Button(nodes.count == 1 && nodes[0].isDirectory ? "Klasörü Aç" : "Aç") { model.activate(ids) }
-            Button("Hızlı Bakış") {
+            Button(nodes.count == 1 && nodes[0].isDirectory ? String(localized: "Open Folder") : String(localized: "Open")) {
+                model.activate(ids)
+            }
+            Button("Quick Look") {
                 model.selection = ids
                 model.toggleQuickLook()
             }
             Divider()
-            Button("Çıkart") {
+            Button("Extract") {
                 model.selection = ids
                 model.extract(.selection)
             }
-            Button("Farklı Konuma Çıkart…") {
+            Button("Extract To…") {
                 model.selection = ids
                 model.extract(.selection, chooseDestination: true)
             }
             Divider()
             if model.isSearching, nodes.count == 1 {
-                Button("Bulunduğu Klasörde Göster") { model.reveal(nodes[0]) }
+                Button("Show in Enclosing Folder") { model.reveal(nodes[0]) }
             }
-            Button(nodes.count == 1 ? "Yolu Kopyala" : "Yolları Kopyala") { model.copyPath(nodes) }
+            Button(nodes.count == 1 ? String(localized: "Copy Path") : String(localized: "Copy Paths")) { model.copyPath(nodes) }
             if model.canEdit {
                 Divider()
                 if nodes.count == 1, nodes[0].isDirectory {
-                    Button("Bu Klasöre Ekle…") { model.chooseFilesToAdd(into: nodes[0].id) }
+                    Button("Add to This Folder…") { model.chooseFilesToAdd(into: nodes[0].id) }
                 }
-                Button("Arşivden Sil…", role: .destructive) {
+                Button("Delete from Archive…", role: .destructive) {
                     model.selection = ids
                     model.requestDeleteSelection()
                 }

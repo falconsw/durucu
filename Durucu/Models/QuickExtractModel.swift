@@ -101,7 +101,7 @@ final class QuickExtractModel {
 
 extension QuickExtractModel: BackgroundWork {
     var isBusy: Bool { phase == .working }
-    var busyTitle: String { "“\(url.lastPathComponent)” çıkartılıyor" }
+    var busyTitle: String { String(localized: "Extracting “\(url.lastPathComponent)”") }
 
     func cancelAndWait() async {
         task?.cancel()

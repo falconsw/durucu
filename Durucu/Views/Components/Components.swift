@@ -93,7 +93,7 @@ struct FormatBadge: View {
 }
 
 struct InfoRow: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: String
     var monospaced = false
 

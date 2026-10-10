@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 enum FileNaming {
     private static let compoundExtensions = ["tar.gz", "tar.bz2", "tar.xz", "tar.zst", "tar.lz", "tar.lzma", "tar.z"]
 
-    /// "Proje.tar.gz" → "Proje", "Fotoğraflar.zip" → "Fotoğraflar".
+    /// "Project.tar.gz" → "Project", "Photos.zip" → "Photos".
     static func baseName(of url: URL) -> String {
         let name = url.lastPathComponent
         let lowered = name.lowercased()
@@ -76,11 +76,11 @@ enum Format {
     }
 
     static func duration(_ seconds: Double) -> String {
-        if seconds < 1 { return "1 saniyeden kısa" }
+        if seconds < 1 { return String(localized: "under a second") }
         let formatter = DateComponentsFormatter()
         formatter.unitsStyle = .short
         formatter.allowedUnits = seconds >= 3600 ? [.hour, .minute] : seconds >= 60 ? [.minute, .second] : [.second]
-        return formatter.string(from: seconds) ?? "\(Int(seconds)) sn"
+        return formatter.string(from: seconds) ?? String(localized: "\(Int(seconds)) s")
     }
 
     static func permissions(_ mode: UInt16) -> String {

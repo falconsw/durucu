@@ -44,8 +44,8 @@ private struct ArchiveSummary: View {
                 SavingsRing(savings: root.savings, lineWidth: 7)
                     .frame(width: 64, height: 64)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Sıkıştırma kazancı").font(.callout.weight(.semibold))
-                    Text("\(Format.bytes(root.size)) içerik \(Format.bytes(info.archiveSize)) arşive sığmış.")
+                    Text("Space saved").font(.callout.weight(.semibold))
+                    Text("\(Format.bytes(root.size)) of content fits in a \(Format.bytes(info.archiveSize)) archive.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -57,20 +57,20 @@ private struct ArchiveSummary: View {
         }
 
         Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 7) {
-            InfoRow(label: "Dosyalar", value: Format.count(root.fileCount))
-            InfoRow(label: "Klasörler", value: Format.count(root.folderCount))
-            InfoRow(label: "Açılmış", value: Format.bytes(root.size))
+            InfoRow(label: "Files", value: Format.count(root.fileCount))
+            InfoRow(label: "Folders", value: Format.count(root.folderCount))
+            InfoRow(label: "Unpacked", value: Format.bytes(root.size))
             if let info = model.info {
-                InfoRow(label: "Arşiv", value: Format.bytes(info.archiveSize))
-                InfoRow(label: "Şifre", value: info.hasEncryptedEntries ? "Şifreli dosyalar var" : "Yok")
+                InfoRow(label: "Archive", value: Format.bytes(info.archiveSize))
+                InfoRow(label: "Password", value: info.hasEncryptedEntries ? String(localized: "Has encrypted files") : String(localized: "None"))
             }
-            InfoRow(label: "Konum", value: model.url.deletingLastPathComponent().path)
+            InfoRow(label: "Location", value: model.url.deletingLastPathComponent().path)
         }
 
         HStack {
-            Button("Finder'da Göster") { NSWorkspace.shared.activateFileViewerSelecting([model.url]) }
+            Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([model.url]) }
             Spacer()
-            Button("Tümünü Çıkart") { model.extract(.all) }
+            Button("Extract All") { model.extract(.all) }
                 .buttonStyle(.borderedProminent)
         }
         .controlSize(.regular)
@@ -109,7 +109,7 @@ private struct NodeDetails: View {
                 SavingsRing(savings: node.savings, lineWidth: 5)
                     .frame(width: 46, height: 46)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(Format.bytes(node.size)) → \(Format.bytes(packed))")
+                    Text(verbatim: "\(Format.bytes(node.size)) → \(Format.bytes(packed))")
                         .font(.callout.weight(.medium))
                         .monospacedDigit()
                     Text(node.method ?? "")
@@ -120,28 +120,28 @@ private struct NodeDetails: View {
         }
 
         Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 7) {
-            InfoRow(label: "Boyut", value: Format.bytes(node.size))
+            InfoRow(label: "Size", value: Format.bytes(node.size))
             if let packed = node.compressedSize, !node.isDirectory {
-                InfoRow(label: "Sıkıştırılmış", value: Format.bytes(packed))
+                InfoRow(label: "Compressed", value: Format.bytes(packed))
             }
             if node.isDirectory {
-                InfoRow(label: "İçerik", value: "\(Format.count(node.fileCount)) dosya, \(Format.count(node.folderCount)) klasör")
+                InfoRow(label: "Contents", value: String(localized: "\(node.fileCount) files, \(node.folderCount) folders"))
             }
-            InfoRow(label: "Değiştirilme", value: Format.date(node.modified))
-            if let method = node.method, !node.isDirectory { InfoRow(label: "Yöntem", value: method) }
+            InfoRow(label: "Modified", value: Format.date(node.modified))
+            if let method = node.method, !node.isDirectory { InfoRow(label: "Method", value: method) }
             if let crc = node.crc32, !node.isDirectory {
                 InfoRow(label: "CRC32", value: String(format: "%08X", crc), monospaced: true)
             }
-            InfoRow(label: "İzinler", value: Format.permissions(node.permissions), monospaced: true)
-            if let target = node.linkTarget { InfoRow(label: "Hedef", value: target) }
-            if node.isEncrypted { InfoRow(label: "Şifre", value: "Şifreli") }
-            InfoRow(label: "Yol", value: node.path)
+            InfoRow(label: "Permissions", value: Format.permissions(node.permissions), monospaced: true)
+            if let target = node.linkTarget { InfoRow(label: "Target", value: target) }
+            if node.isEncrypted { InfoRow(label: "Password", value: String(localized: "Encrypted")) }
+            InfoRow(label: "Path", value: node.path)
         }
 
         HStack {
-            Button(node.isDirectory ? "Klasörü Aç" : "Aç") { model.activate([node.id]) }
+            Button(node.isDirectory ? String(localized: "Open Folder") : String(localized: "Open")) { model.activate([node.id]) }
             Spacer()
-            Button("Çıkart") { model.extract(.selection) }
+            Button("Extract") { model.extract(.selection) }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -160,7 +160,7 @@ private struct NodeDetails: View {
                         .controlSize(.small)
                         .offset(y: 78)
                 } else if node.isEncrypted, model.password == nil, !node.isDirectory {
-                    Label("Önizleme için şifre gerekli", systemImage: "lock.fill")
+                    Label("Enter the password to preview", systemImage: "lock.fill")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .offset(y: 80)
@@ -200,7 +200,7 @@ private struct MultipleSelection: View {
                 }
             }
             .frame(height: 110)
-            Text("\(Format.count(nodes.count)) öğe seçildi")
+            Text("\(nodes.count) items selected")
                 .font(.headline)
         }
         .frame(maxWidth: .infinity)
@@ -208,15 +208,15 @@ private struct MultipleSelection: View {
         let bytes = nodes.reduce(Int64(0)) { $0 + $1.size }
         let packed = nodes.allSatisfy { $0.compressedSize != nil } ? nodes.reduce(Int64(0)) { $0 + ($1.compressedSize ?? 0) } : nil
         Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 7) {
-            InfoRow(label: "Dosyalar", value: Format.count(nodes.reduce(0) { $0 + ($1.isDirectory ? $1.fileCount : 1) }))
-            InfoRow(label: "Boyut", value: Format.bytes(bytes))
-            if let packed { InfoRow(label: "Sıkıştırılmış", value: Format.bytes(packed)) }
+            InfoRow(label: "Files", value: Format.count(nodes.reduce(0) { $0 + ($1.isDirectory ? $1.fileCount : 1) }))
+            InfoRow(label: "Size", value: Format.bytes(bytes))
+            if let packed { InfoRow(label: "Compressed", value: Format.bytes(packed)) }
         }
 
         HStack {
-            Button("Hızlı Bakış") { model.toggleQuickLook() }
+            Button("Quick Look") { model.toggleQuickLook() }
             Spacer()
-            Button("Seçilenleri Çıkart") { model.extract(.selection) }
+            Button("Extract Selected") { model.extract(.selection) }
                 .buttonStyle(.borderedProminent)
         }
     }

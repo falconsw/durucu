@@ -111,7 +111,7 @@ enum ZipCentralDirectory {
 
     private static func methodName(_ method: UInt16, aesStrength: UInt8?, encrypted: Bool) -> String {
         let base = switch method {
-        case 0: "Sıkıştırmasız"
+        case 0: String(localized: "Stored")
         case 8: "Deflate"
         case 9: "Deflate64"
         case 12: "BZip2"
@@ -119,7 +119,7 @@ enum ZipCentralDirectory {
         case 93: "Zstandard"
         case 95: "XZ"
         case 98: "PPMd"
-        default: "Yöntem \(method)"
+        default: String(localized: "Method \(method)")
         }
         guard encrypted else { return base }
         if let aesStrength {

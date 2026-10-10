@@ -31,31 +31,31 @@ struct QuickExtractView: View {
         case .working:
             ProgressView(value: model.fraction)
             HStack {
-                Text(model.currentItem.isEmpty ? "Çıkartılıyor…" : model.currentItem)
+                Text(model.currentItem.isEmpty ? String(localized: "Extracting…") : model.currentItem)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Spacer()
-                Button("İptal") { model.cancel() }
+                Button("Cancel") { model.cancel() }
                     .keyboardShortcut(.cancelAction)
             }
         case .needsPassword(let isRetry):
-            Text(isRetry ? "Şifre yanlış. Tekrar dene." : "Bu arşiv şifreli.")
+            Text(isRetry ? String(localized: "Incorrect password. Try again.") : String(localized: "This archive is password protected."))
                 .font(.callout)
                 .foregroundStyle(isRetry ? .red : .secondary)
             HStack {
-                SecureField("Şifre", text: $password)
+                SecureField("Password", text: $password)
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { model.submit(password: password) }
-                Button("Aç") { model.submit(password: password) }
+                Button("Open") { model.submit(password: password) }
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(password.isEmpty)
             }
             HStack {
                 Spacer()
-                Button("Vazgeç") { model.cancel() }
+                Button("Cancel") { model.cancel() }
                     .keyboardShortcut(.cancelAction)
             }
         case .failed(let message):
@@ -65,11 +65,11 @@ struct QuickExtractView: View {
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
                 Spacer()
-                Button("Kapat") { model.cancel() }
+                Button("Close") { model.cancel() }
                     .keyboardShortcut(.defaultAction)
             }
         case .done:
-            Label("Çıkartıldı", systemImage: "checkmark.circle.fill")
+            Label("Extracted", systemImage: "checkmark.circle.fill")
                 .foregroundStyle(.green)
                 .symbolEffect(.bounce)
         }

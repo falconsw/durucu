@@ -3,9 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>tr</string>
+	<string>en</string>
 	<key>CFBundleLocalizations</key>
 	<array>
+		<string>en</string>
 		<string>tr</string>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -36,7 +37,7 @@
 	<array>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>ZIP Arşivi</string>
+			<string>ZIP Archive</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -48,7 +49,7 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>7-Zip Arşivi</string>
+			<string>7-Zip Archive</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -60,7 +61,7 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>RAR Arşivi</string>
+			<string>RAR Archive</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -72,7 +73,7 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>Tar Arşivi</string>
+			<string>Tar Archive</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -87,7 +88,7 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>Sıkıştırılmış Dosya</string>
+			<string>Compressed File</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -106,7 +107,7 @@
 			<key>UTTypeIdentifier</key>
 			<string>com.rarlab.rar-archive</string>
 			<key>UTTypeDescription</key>
-			<string>RAR arşivi</string>
+			<string>RAR archive</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -132,7 +133,7 @@
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Dürücü ile Dür</string>
+				<string>Compress with Dürücü</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>compressFiles</string>
@@ -149,7 +150,7 @@
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Dürücü ile Buraya Çıkart</string>
+				<string>Extract Here with Dürücü</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>extractArchives</string>

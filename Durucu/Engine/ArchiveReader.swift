@@ -270,7 +270,7 @@ enum ArchiveReader {
         if ["tar", "pax", "ustar", "gnu", "posix"].contains(where: lowered.contains) { return "TAR" }
         if lowered.hasPrefix("iso") { return "ISO" }
         if lowered.hasPrefix("cpio") { return "CPIO" }
-        if lowered == "raw" { return filter ?? "Sıkıştırılmış dosya" }
+        if lowered == "raw" { return filter ?? String(localized: "Compressed file") }
         return name.uppercased()
     }
 }

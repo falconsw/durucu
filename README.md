@@ -1,53 +1,74 @@
 # Dürücü
 
-Finder'da zip'e tıklayınca otomatik açılmasın; önce içine bak, istediğini çıkart. Dosyaları tek hamlede "dür".
+A native macOS archive app. Double-clicking a zip in Finder no longer dumps its contents next to it:
+Dürücü shows you what's inside first, so you extract only what you need. It also creates archives
+and lets you add or remove files in existing ones.
 
-*A native macOS archive app: browse ZIP/7Z/RAR/TAR before extracting, extract what you need, add or remove files, create archives.*
+The name is Turkish for "the one who rolls things up", like a dürüm wrap.
 
-## Kurulum
+## Install
 
 ```sh
 brew install --cask falconsw/tap/durucu
 ```
 
-İlk açılışta Dürücü kendini arşiv dosyaları için varsayılan uygulama yapar. Böylece Finder'da çift tıklayınca
-Arşiv İzlencesi yerine Dürücü açılır. Geri almak için: bir zip'e sağ tık › Bilgi Al › Birlikte aç › Arşiv İzlencesi › Tümünü Değiştir.
+Or download the DMG from [Releases](https://github.com/falconsw/durucu/releases). Requires macOS 26 or later.
+Builds are signed with a Developer ID and notarized by Apple.
 
-## Özellikler
+On first launch Dürücü makes itself the default app for archive files, so double-clicking one in Finder
+opens Dürücü instead of Archive Utility. To undo this, right-click a zip › Get Info › Open with ›
+Archive Utility › Change All.
 
-- **Aç:** ZIP, 7Z, RAR/RAR5, TAR, TAR.GZ/XZ/BZ2, GZ, XZ, ISO, CPIO
-- **Gör:** klasör ağacı, sıralanabilir liste, arama, sıkıştırma kazancı, Hızlı Bakış (Boşluk), bilgi panelinde önizleme
-- **Çıkart:** tümünü veya seçilenleri; akıllı klasör, çakışmada "ad 2", Finder'a sürükle-bırak
-- **Düzenle:** arşive dosya/klasör ekle (sürükle-bırak veya ⇧⌘A), seçilenleri sil (⌘⌫). ZIP, 7Z ve TAR türlerinde çalışır; önceki sürüm Çöp Sepeti'ne gider
-- **Dür:** ZIP (AES-256 şifre), 7Z, TAR.GZ, TAR.XZ; macOS artıklarını (.DS_Store, `._`, `__MACOSX`) dışarıda bırakır
-- Windows'tan gelen Türkçe adlı zip'leri (CP857) doğru gösterir
-- Finder sağ tık: **Dürücü ile Dür** ve **Dürücü ile Buraya Çıkart**
+## Features
 
-## Kaynaktan derleme
+- **Open:** ZIP, 7Z, RAR/RAR5, TAR, TAR.GZ/XZ/BZ2, GZ, XZ, ISO, CPIO
+- **Browse:** folder tree, sortable list, search, compression savings per file, Quick Look (Space), inspector preview
+- **Extract:** everything or just the selection; smart folder; never overwrites (adds " 2"); drag files out to Finder
+- **Edit:** add files and folders (drag and drop or ⇧⌘A), delete the selection (⌘⌫). Works for ZIP, 7Z and TAR;
+  the previous version goes to the Trash
+- **Create:** ZIP (with AES-256 password), 7Z, TAR.GZ, TAR.XZ; leaves out macOS clutter (`.DS_Store`, `._*`, `__MACOSX`)
+- Reads zips made on older Windows machines with Turkish (CP857) file names correctly
+- Finder context menu: **Compress with Dürücü** and **Extract Here with Dürücü**
+- English and Turkish, switchable in Settings › General (English by default)
 
-Gerekenler: Xcode 26+, macOS 26+, [XcodeGen](https://github.com/yonaskolb/XcodeGen).
+## Building from source
+
+Requires Xcode 26+, macOS 26+ and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
 ```sh
-xcodegen generate          # Durucu.xcodeproj'u project.yml'den üretir
+xcodegen generate          # generates Durucu.xcodeproj from project.yml
 open Durucu.xcodeproj
-./scripts/install.sh       # Release derleyip /Applications/Durucu.app'e kurar
-./scripts/release.sh       # Developer ID ile imzalı, noter onaylı dağıtım paketi (dist/)
+./scripts/install.sh       # Release build installed to /Applications/Durucu.app
+./scripts/release.sh       # Developer ID signed, notarized DMG in dist/
 ```
 
-İkon `scripts/make-icon.swift` ile çizilir:
+The app icon is drawn by `scripts/make-icon.swift`:
 `swift scripts/make-icon.swift Durucu/Resources/Assets.xcassets/AppIcon.appiconset`
 
-## Yapı
+## Project layout
 
-| Klasör | İçerik |
+| Folder | Contents |
 | --- | --- |
-| `Durucu/Engine` | libarchive köprüsü (`CLibArchive`), okuma/çıkartma, arşiv yazma, ZIP merkez dizini |
-| `Durucu/Models` | Pencere modelleri, arşiv ağacı, çıkartma servisi, önizleme önbelleği |
-| `Durucu/Views` | SwiftUI ekranları (karşılama, tarayıcı, yeni arşiv, ayarlar) |
-| `Durucu/App` | Uygulama yaşam döngüsü, pencere yönetimi, Finder servisleri |
+| `Durucu/Engine` | libarchive bridge (`CLibArchive`), reading/extracting, writing, editing, ZIP central directory |
+| `Durucu/Models` | Window models, archive tree, extraction service, preview cache |
+| `Durucu/Views` | SwiftUI screens (welcome, browser, new archive, settings) |
+| `Durucu/App` | App lifecycle, window management, Finder services |
+| `Durucu/Resources` | Assets, `Localizable.xcstrings` (English source, Turkish translation) |
 
-Arşiv motoru macOS'un kendi `libarchive`'ını kullanır. SDK'da başlık dosyası olmadığı için gereken
-fonksiyonlar `Engine/CLibArchive/libarchive_shim.h` içinde bildirilmiştir.
+The archive engine uses the `libarchive` that ships with macOS. The SDK has no headers for it, so the
+functions Dürücü needs are declared in `Engine/CLibArchive/libarchive_shim.h`.
 
-Debug derlemesinde `open --env DURUCU_SNAPSHOT_DIR=/klasör -a Durucu.app` her pencerenin görüntüsünü
-o klasöre yazar (ekran kaydı izni gerektirmez).
+### Translations
+
+UI strings are written in English in code and translated in `Durucu/Resources/Localizable.xcstrings`.
+To add a language, add it to the catalog in Xcode, translate, and add its code to `AppLanguage` in
+`Support/Preferences.swift` and to `CFBundleLocalizations` in `Info.plist`.
+
+### Debugging layouts
+
+In Debug builds, `open --env DURUCU_SNAPSHOT_DIR=/some/dir -a Durucu.app` writes a PNG of every window
+to that folder every two seconds (no screen recording permission needed).
+
+## License
+
+[MIT](LICENSE)

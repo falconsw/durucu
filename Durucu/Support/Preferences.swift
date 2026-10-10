@@ -5,8 +5,8 @@ enum OpenBehavior: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .browse: "İçeriğini göster"
-        case .extract: "Hemen çıkart"
+        case .browse: String(localized: "Show its contents")
+        case .extract: String(localized: "Extract it right away")
         }
     }
 }
@@ -16,15 +16,47 @@ enum ExtractDestination: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .beside: "Arşivle aynı klasöre"
-        case .ask: "Her seferinde sor"
-        case .custom: "Seçtiğim klasöre"
+        case .beside: String(localized: "Next to the archive")
+        case .ask: String(localized: "Ask every time")
+        case .custom: String(localized: "To a folder I choose")
         }
+    }
+}
+
+enum AppLanguage: String, CaseIterable, Identifiable {
+    case english = "en"
+    case turkish = "tr"
+
+    var id: String { rawValue }
+
+    /// Each language is named in itself, so it can be found whichever one is active.
+    var title: String {
+        switch self {
+        case .english: "English"
+        case .turkish: "Türkçe"
+        }
+    }
+
+    static var preferred: AppLanguage {
+        AppLanguage(rawValue: UserDefaults.standard.string(forKey: Pref.language) ?? "") ?? .english
+    }
+
+    /// The language this process is running in.
+    static var active: AppLanguage {
+        Bundle.main.preferredLocalizations.first == AppLanguage.turkish.rawValue ? .turkish : .english
+    }
+
+    /// macOS picks an app's language from `AppleLanguages` when it launches. Writing the
+    /// preference there keeps English the default even on a Turkish system; a change
+    /// takes effect on the next launch.
+    static func apply() {
+        UserDefaults.standard.set([preferred.rawValue], forKey: "AppleLanguages")
     }
 }
 
 /// UserDefaults keys shared by `@AppStorage` views and non-view code.
 enum Pref {
+    static let language = "appLanguage"
     static let openBehavior = "openBehavior"
     static let showMacMetadata = "showMacMetadata"
     static let autoPreview = "autoPreview"
@@ -39,6 +71,7 @@ enum Pref {
 
     static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
+            language: AppLanguage.english.rawValue,
             openBehavior: OpenBehavior.browse.rawValue,
             showMacMetadata: false,
             autoPreview: true,

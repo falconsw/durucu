@@ -32,7 +32,7 @@ enum DefaultApps {
     }
 
     static func handlerName(for type: HandledArchiveType) -> String {
-        guard let url = handler(for: type) else { return "Yok" }
+        guard let url = handler(for: type) else { return String(localized: "None") }
         if isOurs(url) { return "Dürücü" }
         return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
     }

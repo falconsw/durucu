@@ -19,11 +19,11 @@ struct ComposeView: View {
                     .transition(.scale(scale: 0.96).combined(with: .opacity))
             case .failed(let message):
                 ContentUnavailableView {
-                    Label("Arşiv oluşturulamadı", systemImage: "exclamationmark.triangle.fill")
+                    Label("Couldn't create the archive", systemImage: "exclamationmark.triangle.fill")
                 } description: {
                     Text(message)
                 } actions: {
-                    Button("Geri Dön") { model.backToEditing() }
+                    Button("Go Back") { model.backToEditing() }
                         .buttonStyle(.borderedProminent)
                 }
             }
@@ -61,17 +61,17 @@ private struct ComposeEditor: View {
 
             Form {
                 Section {
-                    LabeledContent("Ad") {
+                    LabeledContent("Name") {
                         HStack(spacing: 4) {
-                            TextField("Ad", text: Binding(get: { model.name }, set: { model.renameByUser($0) }))
+                            TextField("Name", text: Binding(get: { model.name }, set: { model.renameByUser($0) }))
                                 .textFieldStyle(.roundedBorder)
                                 .labelsHidden()
-                            Text(".\(model.format.fileExtension)")
+                            Text(verbatim: ".\(model.format.fileExtension)")
                                 .foregroundStyle(.secondary)
                                 .monospaced()
                         }
                     }
-                    LabeledContent("Konum") {
+                    LabeledContent("Location") {
                         Button {
                             model.chooseDestination(window: window)
                         } label: {
@@ -91,14 +91,14 @@ private struct ComposeEditor: View {
                 }
 
                 Section {
-                    Picker("Biçim", selection: $model.format) {
+                    Picker("Format", selection: $model.format) {
                         ForEach(OutputFormat.creatable) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
                     Text(model.format.summary)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Picker("Sıkıştırma", selection: $model.level) {
+                    Picker("Compression", selection: $model.level) {
                         ForEach(CompressionLevel.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
@@ -106,13 +106,15 @@ private struct ComposeEditor: View {
 
                 Section {
                     Toggle(isOn: $model.usesPassword) {
-                        Text("Şifrele")
-                        Text(model.format.supportsPassword ? "AES-256. Açmak için şifre gerekir." : "Şifreleme yalnızca ZIP biçiminde var.")
+                        Text("Encrypt")
+                        Text(model.format.supportsPassword
+                            ? String(localized: "AES-256. A password is needed to open it.")
+                            : String(localized: "Encryption is only available for ZIP."))
                     }
                     .disabled(!model.format.supportsPassword)
                     if model.usesPassword, model.format.supportsPassword {
-                        SecureField("Şifre", text: $model.password)
-                        SecureField("Şifre (tekrar)", text: $model.passwordConfirmation)
+                        SecureField("Password", text: $model.password)
+                        SecureField("Confirm Password", text: $model.passwordConfirmation)
                         if let problem = model.passwordProblem, !model.passwordConfirmation.isEmpty || model.password.isEmpty {
                             Label(problem, systemImage: "exclamationmark.circle")
                                 .font(.caption)
@@ -120,8 +122,8 @@ private struct ComposeEditor: View {
                         }
                     }
                     Toggle(isOn: $model.excludesMacMetadata) {
-                        Text("macOS artıklarını dışarıda bırak")
-                        Text(".DS_Store ve ._ dosyaları Windows'ta çöp gibi görünür.")
+                        Text("Leave out macOS clutter")
+                        Text("`.DS_Store` and `._` files look like junk on Windows.")
                     }
                 }
             }
@@ -130,13 +132,13 @@ private struct ComposeEditor: View {
             .animation(.smooth, value: model.usesPassword)
 
             HStack {
-                Button("Vazgeç", action: close)
+                Button("Cancel", action: close)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
                 Button {
                     model.start()
                 } label: {
-                    Label("Dür", systemImage: "shippingbox.fill")
+                    Label("Compress", systemImage: "shippingbox.fill")
                         .frame(minWidth: 90)
                 }
                 .buttonStyle(.glassProminent)
@@ -152,15 +154,15 @@ private struct ComposeEditor: View {
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("Yeni arşiv")
+                Text("New archive")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                 Group {
                     if model.sources.isEmpty {
-                        Text("Arşive girecek dosyaları ekle")
+                        Text("Add the files to put in the archive")
                     } else if model.isScanning {
-                        Text("\(model.sources.count) öğe · hesaplanıyor…")
+                        Text("\(model.sources.count) items · calculating…")
                     } else {
-                        Text("\(Format.count(model.fileCount)) dosya · \(Format.bytes(model.totalBytes))")
+                        Text("\(model.fileCount) files · \(Format.bytes(model.totalBytes))")
                             .contentTransition(.numericText())
                     }
                 }
@@ -171,7 +173,7 @@ private struct ComposeEditor: View {
             Button {
                 addFiles()
             } label: {
-                Label("Ekle", systemImage: "plus")
+                Label("Add", systemImage: "plus")
             }
             .buttonStyle(.glass)
         }
@@ -185,9 +187,9 @@ private struct ComposeEditor: View {
                         .font(.system(size: 34))
                         .foregroundStyle(Color.accentColor)
                         .symbolEffect(.bounce, value: isTargeted)
-                    Text("Dosya ve klasörleri buraya bırak")
+                    Text("Drop files and folders here")
                         .font(.headline)
-                    Button("Dosya Seç…", action: addFiles)
+                    Button("Choose Files…", action: addFiles)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -196,8 +198,8 @@ private struct ComposeEditor: View {
                         SourceRow(source: source)
                             .tag(source.url)
                             .contextMenu {
-                                Button("Finder'da Göster") { NSWorkspace.shared.activateFileViewerSelecting([source.url]) }
-                                Button("Listeden Çıkar") { model.remove([source.url]) }
+                                Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([source.url]) }
+                                Button("Remove from List") { model.remove([source.url]) }
                             }
                     }
                 }
@@ -218,7 +220,7 @@ private struct ComposeEditor: View {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = true
-        panel.prompt = "Ekle"
+        panel.prompt = String(localized: "Add")
         guard let window else { return }
         panel.beginSheetModal(for: window) { response in
             if response == .OK { model.add(panel.urls) }
@@ -287,7 +289,7 @@ private struct ComposeProgress: View {
             .frame(width: 170, height: 170)
 
             VStack(spacing: 6) {
-                Text("Dürülüyor…")
+                Text("Compressing…")
                     .font(.title2.weight(.bold))
                 Text(model.progress.currentItem.isEmpty ? model.outputFileName : model.progress.currentItem)
                     .foregroundStyle(.secondary)
@@ -302,7 +304,7 @@ private struct ComposeProgress: View {
                 }
             }
 
-            Button("İptal", role: .cancel) { model.cancel() }
+            Button("Cancel", role: .cancel) { model.cancel() }
                 .buttonStyle(.glass)
                 .keyboardShortcut(.cancelAction)
         }
@@ -311,8 +313,8 @@ private struct ComposeProgress: View {
 
     private var stats: String {
         var parts = ["\(Format.bytes(model.progress.bytesDone)) / \(Format.bytes(model.totalBytes))"]
-        if model.bytesPerSecond > 0 { parts.append("\(Format.bytes(Int64(model.bytesPerSecond)))/sn") }
-        if let remaining = model.remainingSeconds { parts.append("~\(Format.duration(remaining)) kaldı") }
+        if model.bytesPerSecond > 0 { parts.append(String(localized: "\(Format.bytes(Int64(model.bytesPerSecond)))/s")) }
+        if let remaining = model.remainingSeconds { parts.append(String(localized: "about \(Format.duration(remaining)) left")) }
         return parts.joined(separator: " · ")
     }
 }
@@ -330,7 +332,7 @@ private struct ComposeDone: View {
                 .symbolEffect(.bounce, value: appeared)
 
             VStack(spacing: 6) {
-                Text("Arşiv hazır")
+                Text("Archive ready")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                 Text(outcome.output.lastPathComponent)
                     .font(.title3)
@@ -340,30 +342,30 @@ private struct ComposeDone: View {
             }
 
             HStack(spacing: 24) {
-                stat(Format.bytes(outcome.originalBytes), "önce")
+                stat(Format.bytes(outcome.originalBytes), "before")
                 Image(systemName: "arrow.right").foregroundStyle(.tertiary)
-                stat(Format.bytes(outcome.archiveBytes), "sonra")
+                stat(Format.bytes(outcome.archiveBytes), "after")
                 if outcome.originalBytes > 0 {
                     let saved = max(0, 1 - Double(outcome.archiveBytes) / Double(outcome.originalBytes))
-                    stat(Format.percent(saved), "küçüldü")
+                    stat(Format.percent(saved), "smaller")
                 }
             }
             .padding(.horizontal, 22)
             .padding(.vertical, 14)
             .glassEffect(.regular, in: .rect(cornerRadius: 18))
 
-            Text("\(Format.duration(outcome.duration)) sürdü")
+            Text("Took \(Format.duration(outcome.duration))")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
 
             HStack(spacing: 10) {
-                Button("Kapat", action: close)
+                Button("Close", action: close)
                     .keyboardShortcut(.cancelAction)
-                Button("Arşivi Aç") {
+                Button("Open Archive") {
                     WindowManager.shared.openArchive(outcome.output)
                     close()
                 }
-                Button("Finder'da Göster") {
+                Button("Show in Finder") {
                     NSWorkspace.shared.activateFileViewerSelecting([outcome.output])
                     close()
                 }
@@ -376,7 +378,7 @@ private struct ComposeDone: View {
         .onAppear { appeared = true }
     }
 
-    private func stat(_ value: String, _ label: String) -> some View {
+    private func stat(_ value: String, _ label: LocalizedStringKey) -> some View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.system(.title3, design: .rounded, weight: .semibold))

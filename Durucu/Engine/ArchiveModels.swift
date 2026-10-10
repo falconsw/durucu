@@ -46,14 +46,14 @@ enum ArchiveError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .cannotOpen(let detail): "Arşiv açılamadı. \(detail)"
-        case .notAnArchive: "Bu dosya tanınan bir arşiv biçiminde değil."
-        case .passwordRequired: "Bu arşiv şifreli."
-        case .wrongPassword: "Şifre yanlış."
-        case .unsupportedEncryption: "Bu arşivin şifreleme türü desteklenmiyor (şifreli 7z/RAR)."
-        case .cancelled: "İşlem iptal edildi."
-        case .readFailed(let detail): "Arşiv okunurken hata oluştu. \(detail)"
-        case .writeFailed(let detail): "Yazma hatası. \(detail)"
+        case .cannotOpen(let detail): String(localized: "The archive couldn't be opened. \(detail)")
+        case .notAnArchive: String(localized: "This file isn't in an archive format Dürücü recognizes.")
+        case .passwordRequired: String(localized: "This archive is password protected.")
+        case .wrongPassword: String(localized: "The password is incorrect.")
+        case .unsupportedEncryption: String(localized: "This archive's encryption isn't supported (encrypted 7z/RAR).")
+        case .cancelled: String(localized: "The operation was cancelled.")
+        case .readFailed(let detail): String(localized: "Something went wrong while reading the archive. \(detail)")
+        case .writeFailed(let detail): String(localized: "Couldn't write. \(detail)")
         }
     }
 }

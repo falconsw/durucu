@@ -2,7 +2,7 @@ name: Durucu
 options:
   bundleIdPrefix: com.falconsw
   createIntermediateGroups: true
-  developmentLanguage: tr
+  developmentLanguage: en
   deploymentTarget:
     macOS: "26.0"
 settings:
@@ -36,3 +36,5 @@ targets:
         ENABLE_APP_SANDBOX: NO
         COMBINE_HIDPI_IMAGES: YES
         DEAD_CODE_STRIPPING: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES

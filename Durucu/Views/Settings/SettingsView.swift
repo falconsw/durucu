@@ -3,9 +3,9 @@ import SwiftUI
 struct SettingsView: View {
     var body: some View {
         TabView {
-            Tab("Genel", systemImage: "gearshape") { GeneralSettings() }
-            Tab("Çıkartma", systemImage: "arrow.down.doc") { ExtractSettings() }
-            Tab("Sıkıştırma", systemImage: "shippingbox") { CompressSettings() }
+            Tab("General", systemImage: "gearshape") { GeneralSettings() }
+            Tab("Extracting", systemImage: "arrow.down.doc") { ExtractSettings() }
+            Tab("Compressing", systemImage: "shippingbox") { CompressSettings() }
             Tab("Finder", systemImage: "macwindow") { IntegrationSettings() }
         }
         .frame(width: 560)
@@ -13,27 +13,45 @@ struct SettingsView: View {
 }
 
 private struct GeneralSettings: View {
+    @AppStorage(Pref.language) private var language = AppLanguage.english
     @AppStorage(Pref.openBehavior) private var openBehavior = OpenBehavior.browse
     @AppStorage(Pref.showMacMetadata) private var showMacMetadata = false
     @AppStorage(Pref.autoPreview) private var autoPreview = true
 
     var body: some View {
         Form {
-            Picker("Bir arşive çift tıkladığımda", selection: $openBehavior) {
-                ForEach(OpenBehavior.allCases) { Text($0.title).tag($0) }
+            Section {
+                Picker("Language", selection: $language) {
+                    ForEach(AppLanguage.allCases) { Text(verbatim: $0.title).tag($0) }
+                }
+                .onChange(of: language) { AppLanguage.apply() }
+                if language != AppLanguage.active {
+                    HStack {
+                        Text("Dürücü needs to restart to switch languages.")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Restart Now") { Relaunch.now() }
+                        .buttonStyle(.borderedProminent)
+                    }
+                }
             }
-            .pickerStyle(.radioGroup)
-            Toggle(isOn: $autoPreview) {
-                Text("Seçili dosyayı bilgi panelinde önizle")
-                Text("200 MB'a kadar olan dosyalar arka planda açılır.")
-            }
-            Toggle(isOn: $showMacMetadata) {
-                Text("macOS artıklarını göster")
-                Text("__MACOSX klasörü, ._ ve .DS_Store dosyaları. Yeni açılan pencerelerde geçerli olur.")
+            Section {
+                Picker("When I double-click an archive", selection: $openBehavior) {
+                    ForEach(OpenBehavior.allCases) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.radioGroup)
+                Toggle(isOn: $autoPreview) {
+                    Text("Preview the selected file in the inspector")
+                    Text("Files up to 200 MB are extracted in the background.")
+                }
+                Toggle(isOn: $showMacMetadata) {
+                    Text("Show macOS clutter")
+                    Text("The `__MACOSX` folder, `._` and `.DS_Store` files. Applies to newly opened windows.")
+                }
             }
         }
         .formStyle(.grouped)
-        .frame(height: 260)
+        .frame(height: 360)
     }
 }
 
@@ -46,11 +64,11 @@ private struct ExtractSettings: View {
 
     var body: some View {
         Form {
-            Picker("Çıkartılan dosyalar", selection: $destination) {
+            Picker("Put extracted files", selection: $destination) {
                 ForEach(ExtractDestination.allCases) { Text($0.title).tag($0) }
             }
             if destination == .custom {
-                LabeledContent("Klasör") {
+                LabeledContent("Folder") {
                     Button {
                         let panel = NSOpenPanel()
                         panel.canChooseFiles = false
@@ -64,13 +82,13 @@ private struct ExtractSettings: View {
                 }
             }
             Toggle(isOn: $smartFolder) {
-                Text("Akıllı klasör")
-                Text("Arşivin içinde zaten tek bir klasör varsa onu ayrıca sarmalamaz.")
+                Text("Smart folder")
+                Text("If the archive already holds a single folder, don't wrap it in another one.")
             }
-            Toggle("Bitince Finder'da göster", isOn: $reveal)
+            Toggle("Show in Finder when done", isOn: $reveal)
             Toggle(isOn: $trashAfter) {
-                Text("Hemen çıkartınca arşivi Çöp Sepeti'ne taşı")
-                Text("Yalnızca “Hemen çıkart” davranışında ve Finder servisinde.")
+                Text("Move the archive to the Trash after extracting right away")
+                Text("Only for “Extract it right away” and the Finder service.")
             }
         }
         .formStyle(.grouped)
@@ -85,17 +103,17 @@ private struct CompressSettings: View {
 
     var body: some View {
         Form {
-            Picker("Varsayılan biçim", selection: $format) {
+            Picker("Default format", selection: $format) {
                 ForEach(OutputFormat.creatable) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
-            Picker("Varsayılan sıkıştırma", selection: $level) {
+            Picker("Default compression", selection: $level) {
                 ForEach(CompressionLevel.allCases) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
             Toggle(isOn: $exclude) {
-                Text("macOS artıklarını dışarıda bırak")
-                Text(".DS_Store, ._ dosyaları ve __MACOSX arşive eklenmez.")
+                Text("Leave out macOS clutter")
+                Text("`.DS_Store`, `._` files and `__MACOSX` aren't added to archives.")
             }
         }
         .formStyle(.grouped)
@@ -117,7 +135,7 @@ private struct IntegrationSettings: View {
                             Text(DefaultApps.handlerName(for: type))
                                 .foregroundStyle(isOurs ? Color.green : Color.secondary)
                             if !isOurs {
-                                Button("Dürücü yap") {
+                                Button("Use Dürücü") {
                                     Task {
                                         await DefaultApps.makeDefault([type])
                                         refresh += 1
@@ -134,7 +152,7 @@ private struct IntegrationSettings: View {
                     }
                 }
             } header: {
-                Text("Finder'da açan uygulama")
+                Text("App that opens them in Finder")
             } footer: {
                 HStack {
                     Spacer()
@@ -146,7 +164,7 @@ private struct IntegrationSettings: View {
                             refresh += 1
                         }
                     } label: {
-                        Text("Hepsini Dürücü ile aç")
+                        Text("Open All with Dürücü")
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(isWorking || DefaultApps.isDefaultForAll)
@@ -154,9 +172,9 @@ private struct IntegrationSettings: View {
             }
             .id(refresh)
 
-            Section("Sağ tık menüsü") {
+            Section("Context menu") {
                 Label {
-                    Text("Finder'da dosyalara sağ tıklayıp **Hızlı İşlemler › Dürücü ile Dür** ya da **Dürücü ile Buraya Çıkart** seçebilirsin. Görünmüyorsa Sistem Ayarları › Klavye › Klavye Kestirmeleri › Servisler bölümünden aç.")
+                    Text("Right-click files in Finder and choose **Quick Actions › Compress with Dürücü** or **Extract Here with Dürücü**. If they're missing, turn them on in System Settings › Keyboard › Keyboard Shortcuts › Services.")
                 } icon: {
                     Image(systemName: "contextualmenu.and.cursorarrow")
                 }

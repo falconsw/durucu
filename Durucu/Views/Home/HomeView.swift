@@ -15,10 +15,10 @@ struct HomeView: View {
                 GlassEffectContainer(spacing: 18) {
                     HStack(spacing: 18) {
                         ActionCard(
-                            title: "Dür",
-                            subtitle: "Dosya ve klasörleri bırak, tek arşive sarayım.",
+                            title: "Compress",
+                            subtitle: "Drop files and folders to wrap them into one archive.",
                             systemImage: "shippingbox.fill",
-                            hint: "veya tıklayıp seç",
+                            hint: "or click to choose",
                             tint: .orange,
                             isTargeted: $compressTargeted
                         ) {
@@ -27,10 +27,10 @@ struct HomeView: View {
                             WindowManager.shared.showCompose(with: urls)
                         }
                         ActionCard(
-                            title: "Aç",
-                            subtitle: "ZIP, 7Z, RAR, TAR… İçine bak, istediğini çıkart.",
+                            title: "Open",
+                            subtitle: "ZIP, 7Z, RAR, TAR… Look inside, extract what you need.",
                             systemImage: "archivebox.fill",
-                            hint: "veya tıklayıp seç",
+                            hint: "or click to choose",
                             tint: .pink,
                             isTargeted: $openTargeted
                         ) {
@@ -62,9 +62,9 @@ struct HomeView: View {
                 .frame(width: 68, height: 68)
                 .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Dürücü")
+                Text(verbatim: "Dürücü")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
-                Text("Dosyalarını dür, arşivlerini aç.")
+                Text("Wrap up your files, open your archives.")
                     .font(.title3)
                     .foregroundStyle(.secondary)
             }
@@ -76,7 +76,7 @@ struct HomeView: View {
             }
             .buttonStyle(.glass)
             .buttonBorderShape(.circle)
-            .help("Ayarlar")
+            .help("Settings")
         }
     }
 
@@ -84,7 +84,7 @@ struct HomeView: View {
     private var recentSection: some View {
         if !recents.urls.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Son açılanlar")
+                Text("Recently opened")
                     .font(.headline)
                     .foregroundStyle(.secondary)
                 ScrollView(.horizontal) {
@@ -106,11 +106,11 @@ struct HomeView: View {
                 .foregroundStyle(isDefault ? Color.green : Color.accentColor)
                 .font(.title3)
             if isDefault {
-                Text("ZIP dosyaları Finder'da Dürücü ile açılıyor.")
+                Text("Finder opens ZIP files with Dürücü.")
             } else {
-                Text("ZIP dosyaları şu an **\(zipHandler)** ile açılıyor.")
+                Text("ZIP files currently open with **\(zipHandler)**.")
                 Spacer()
-                Button("Dürücü'yü varsayılan yap") {
+                Button("Make Dürücü the Default") {
                     Task {
                         await DefaultApps.makeDefault()
                         refreshDefaultState()
@@ -133,10 +133,10 @@ struct HomeView: View {
 }
 
 private struct ActionCard: View {
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let systemImage: String
-    let hint: String
+    let hint: LocalizedStringKey
     let tint: Color
     @Binding var isTargeted: Bool
     let action: () -> Void
@@ -160,7 +160,7 @@ private struct ActionCard: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Label(isTargeted ? "Bırak!" : hint, systemImage: isTargeted ? "arrow.down.circle.fill" : "hand.point.up.left")
+                Label(isTargeted ? "Drop!" : hint, systemImage: isTargeted ? "arrow.down.circle.fill" : "hand.point.up.left")
                     .font(.caption)
                     .foregroundStyle(isTargeted ? AnyShapeStyle(tint) : AnyShapeStyle(.tertiary))
                     .contentTransition(.symbolEffect(.replace))
@@ -209,7 +209,7 @@ private struct RecentChip: View {
         .buttonStyle(.plain)
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 14))
         .contextMenu {
-            Button("Finder'da Göster") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+            Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
         }
         .help(url.path)
     }
