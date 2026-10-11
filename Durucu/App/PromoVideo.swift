@@ -645,7 +645,7 @@ private struct PromoFrame: View {
             desktop
 
             if opening > 0 {
-                ArchiveWindow(scene: scene, time: time)
+                PromoWindow(scene: scene, time: time)
                     .frame(width: output.window.width, height: output.window.height)
                     .scaleEffect(0.12 + 0.88 * opening, anchor: openingAnchor)
                     .opacity(min(1, opening * 2.5))
@@ -912,7 +912,7 @@ private struct DesktopIcon: View {
 
 /// The archive window, drawn by hand: tables, sidebars and glass do not render offscreen.
 /// It follows `ArchiveWindowView` piece by piece.
-private struct ArchiveWindow: View {
+private struct PromoWindow: View {
     let scene: PromoScene
     let time: Double
 
