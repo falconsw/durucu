@@ -7,6 +7,9 @@ on:
     branches: [promo-video]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   render:
     runs-on: macos-26
@@ -66,3 +69,19 @@ jobs:
         with:
           name: promo-stills
           path: stills/*.png
+
+      # Also pushed to a throwaway branch, so the files can be fetched with plain git.
+      - name: Publish to the promo-video-renders branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir publish
+          cp out/*.mp4 stills/*.png publish/
+          cd publish
+          git init -q -b promo-video-renders
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -qm "Promo video renders for ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" HEAD:promo-video-renders
