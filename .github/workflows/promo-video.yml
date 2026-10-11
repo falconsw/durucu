@@ -1,0 +1,68 @@
+name: Promo video
+
+# Builds Dürücü on macOS and renders the promo clips (landscape and portrait, English and
+# Turkish) with `--promo-video`. The videos and a few stills from each are uploaded as artifacts.
+on:
+  push:
+    branches: [promo-video]
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versions
+        run: sw_vers && xcodebuild -version
+
+      - name: Build
+        shell: bash
+        run: |
+          xcodebuild -project Durucu.xcodeproj -target Durucu -configuration Release \
+            SYMROOT="$PWD/build" CODE_SIGN_IDENTITY=- build -quiet
+
+      - name: Render
+        shell: bash
+        run: |
+          APP=build/Release/Durucu.app/Contents/MacOS/Durucu
+          mkdir -p out
+          "$APP" --promo-video out/durucu-en.mp4 -appLanguage en
+          "$APP" --promo-video out/durucu-en-portrait.mp4 --portrait -appLanguage en
+          "$APP" --promo-video out/durucu-tr.mp4 -appLanguage tr
+          "$APP" --promo-video out/durucu-tr-portrait.mp4 --portrait -appLanguage tr
+          ls -la out
+
+      - name: Stills
+        shell: bash
+        run: |
+          mkdir -p stills
+          cat > /tmp/stills.swift <<'EOF'
+          import AppKit
+          import AVFoundation
+
+          let arguments = CommandLine.arguments
+          let generator = AVAssetImageGenerator(asset: AVURLAsset(url: URL(fileURLWithPath: arguments[1])))
+          generator.requestedTimeToleranceBefore = .zero
+          generator.requestedTimeToleranceAfter = .zero
+          for seconds in [0.9, 1.6, 2.5, 4.8, 6.5, 8.2, 9.8, 11.8, 15.5] {
+              let image = try generator.copyCGImage(at: CMTime(seconds: seconds, preferredTimescale: 600), actualTime: nil)
+              let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])!
+              try data.write(to: URL(fileURLWithPath: "\(arguments[2])-\(seconds).png"))
+          }
+          EOF
+          for video in out/*.mp4; do
+            swift /tmp/stills.swift "$video" "stills/$(basename "$video" .mp4)"
+          done
+          ls stills
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promo-videos
+          path: out/*.mp4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promo-stills
+          path: stills/*.png
