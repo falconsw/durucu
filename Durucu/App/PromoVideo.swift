@@ -251,7 +251,10 @@ private struct PromoCopy {
 
     func bytes(_ value: Int64) -> String { value.formatted(.byteCount(style: .file).locale(locale)) }
     func percent(_ value: Double) -> String { value.formatted(.percent.precision(.fractionLength(0)).locale(locale)) }
-    func date(_ value: Date) -> String { value.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale)) }
+    /// Without the year, so it fits the column: "Oct 8, 5:05 PM", "8 Eki 17:05".
+    func date(_ value: Date) -> String {
+        value.formatted(Date.FormatStyle(locale: locale).month(.abbreviated).day().hour().minute())
+    }
 }
 
 // MARK: - Sample data
@@ -836,7 +839,7 @@ private struct PromoFrame: View {
         if shown > 0 {
             let compact = output.isCompact
             ZStack {
-                Color.black.opacity(0.72 * shown)
+                Color.black.opacity(0.86 * shown)
                 VStack(spacing: 18) {
                     Image(nsImage: scene.appIcon)
                         .resizable()
