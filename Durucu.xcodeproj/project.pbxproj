@@ -12,6 +12,7 @@
 		0E2E690458156C0EC0992480 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4957D2DD32402F978C106F /* Preferences.swift */; };
 		0F31AC94E293016DF78869D6 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8F844071AF22BBF0F1F93E /* HomeView.swift */; };
 		103681976BA2155B3EF8A660 /* DebugSnapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E88828C62E39B3F20F8203A /* DebugSnapshots.swift */; };
+		0B85EC494613A65D65ABE7A4 /* PromoVideo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10113FDF7301EC16225D959D /* PromoVideo.swift */; };
 		1D9381F4CBB9C470F4D75D73 /* ArchiveEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2768D181D815E471B3950CF /* ArchiveEditor.swift */; };
 		1DD264A5960AD02EF6F0A29B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0B6ACB872A59AE0CF9685491 /* InfoPlist.strings */; };
 		22840D8FD5E1EECEB9070575 /* ArchiveWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144776D578A4331DA9117581 /* ArchiveWindowView.swift */; };
@@ -67,6 +68,7 @@
 		9B8F844071AF22BBF0F1F93E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		9C9E80A265D403CC12885340 /* QuickExtractModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickExtractModel.swift; sourceTree = "<group>"; };
 		9E88828C62E39B3F20F8203A /* DebugSnapshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugSnapshots.swift; sourceTree = "<group>"; };
+		10113FDF7301EC16225D959D /* PromoVideo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoVideo.swift; sourceTree = "<group>"; };
 		A52B78145753E5F3F1A1107D /* ComposeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeModel.swift; sourceTree = "<group>"; };
 		ADE282750B46D2A53C820D40 /* FileSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSupport.swift; sourceTree = "<group>"; };
 		B1D475D6EB206AF4324F0CE1 /* Durucu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Durucu.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -129,6 +131,7 @@
 				15883EE1EBBA9450E671993A /* AppDelegate.swift */,
 				9E88828C62E39B3F20F8203A /* DebugSnapshots.swift */,
 				F8035CA5B0A3E41F80369AE1 /* DurucuApp.swift */,
+				10113FDF7301EC16225D959D /* PromoVideo.swift */,
 				211E3ACF3C6F2818D76D4A48 /* WindowManager.swift */,
 			);
 			path = App;
@@ -318,6 +321,7 @@
 				103681976BA2155B3EF8A660 /* DebugSnapshots.swift in Sources */,
 				A4E0E2C38E554AD3BCB8998D /* DefaultApps.swift in Sources */,
 				98E2B0FD90A32F3A11EA3DC6 /* DurucuApp.swift in Sources */,
+				0B85EC494613A65D65ABE7A4 /* PromoVideo.swift in Sources */,
 				47F499431B1ACF6E770ADD37 /* EntryTable.swift in Sources */,
 				0154FEC83D472883544D764C /* ExtractionService.swift in Sources */,
 				FE7B3BB498157D611E95F080 /* FileSupport.swift in Sources */,

@@ -69,6 +69,19 @@ To add a language, add it to the catalog in Xcode, translate, and add its code t
 In Debug builds, `open --env DURUCU_SNAPSHOT_DIR=/some/dir -a Durucu.app` writes a PNG of every window
 to that folder every two seconds (no screen recording permission needed).
 
+### Promo video
+
+`Durucu --promo-video out.mp4` renders a short promo frame by frame from sample data: 1080p60 for X and
+YouTube, or 1080×1920 for Reels and TikTok with `--portrait`. Add `-appLanguage tr` for Turkish.
+
+```sh
+APP=/Applications/Durucu.app/Contents/MacOS/Durucu
+$APP --promo-video dist/durucu-en.mp4
+$APP --promo-video dist/durucu-en-portrait.mp4 --portrait
+$APP --promo-video dist/durucu-tr.mp4 -appLanguage tr
+$APP --promo-video dist/durucu-tr-portrait.mp4 --portrait -appLanguage tr
+```
+
 ## License
 
 [MIT](LICENSE)

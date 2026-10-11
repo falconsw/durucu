@@ -1,6 +1,19 @@
 import SwiftUI
 
 @main
+@MainActor
+enum Entry {
+    static func main() async {
+        // `--promo-video out.mp4 [--portrait]` renders the promo clip and exits; see PromoVideo.
+        let arguments = CommandLine.arguments
+        if let index = arguments.firstIndex(of: "--promo-video"), arguments.indices.contains(index + 1) {
+            await PromoVideo.write(to: arguments[index + 1], output: arguments.contains("--portrait") ? .portrait : .landscape)
+            return
+        }
+        DurucuApp.main()
+    }
+}
+
 struct DurucuApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
